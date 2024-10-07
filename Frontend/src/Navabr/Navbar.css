@@ -1,6 +1,6 @@
 /* Navbar.css */
 .navbar-3d {
-    background-color: #343a40; /* Dark background */
+    background-color: #212529; /* Dark background for the navbar */
     border: none; /* Remove border for a cleaner look */
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2), 0 4px 30px rgba(0, 0, 0, 0.1); /* Strong shadow for depth */
     transition: box-shadow 0.3s ease, transform 0.3s ease; /* Smooth transition */
@@ -14,17 +14,18 @@
   .navbar-brand {
     font-weight: bold;
     font-size: 1.5rem;
+    color: #ffc107; /* Vibrant yellow for brand */
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4); /* Shadow for brand name */
   }
   
   .nav-link {
     font-weight: 500;
-    color: #ffffff; /* White text */
+    color: #ffffff; /* White text for links */
     transition: color 0.3s; /* Smooth color transition */
   }
   
   .nav-link:hover {
-    color: #ffcc00; /* Highlight color on hover */
+    color: #ffc107; /* Vibrant yellow on hover */
     text-shadow: 0 0 5px rgba(255, 204, 0, 0.5); /* Glowing effect on hover */
   }
   
@@ -37,13 +38,16 @@
   
   .form-control:focus {
     box-shadow: 0 0 8px rgba(255, 204, 0, 0.5); /* Shadow on focus */
-    border-color: #ffcc00; /* Border color on focus */
+    border-color: #ffc107; /* Border color on focus */
   }
   
   .btn-3d {
+    background-color: #007bff; /* Bootstrap primary color */
+    color: white; /* White text */
     border: none; /* Remove default border */
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Shadow for button */
     transition: box-shadow 0.3s ease, transform 0.3s ease; /* Smooth transition */
+    border-radius: 20px; /* Rounded corners */
   }
   
   .btn-3d:hover {

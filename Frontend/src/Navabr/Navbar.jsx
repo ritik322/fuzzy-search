@@ -3,7 +3,7 @@ import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
-import './Navbar.css'; // Make sure to import your CSS file
+import './Navbar.css'; // Ensure to import your CSS file
 
 function ColorSchemesExample() {
   return (

@@ -1,10 +1,16 @@
-
-
+import React from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import Button from 'react-bootstrap/Button';
+import ColorSchemesExample from "./Navabr/Navbar";
 function App() {
-  const [count, setCount] = useState(0)
+
 
   return (
-    <h1>HEllO</h1>
+    <>
+   
+      <ColorSchemesExample/>
+
+    </>
   )
 }
 

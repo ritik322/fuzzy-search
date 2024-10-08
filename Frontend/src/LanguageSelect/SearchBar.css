@@ -1,0 +1,46 @@
+/* Search Bar Styling */
+.search-bar {
+  max-width: 1000px; /* Max width for the search bar */
+  display: flex;
+  justify-content: center;
+  padding-top: 30px;
+  
+   /* Center the search bar */
+}
+
+.search-select {
+  max-width: 200px; /* Limit the width of the dropdown */
+  font-size: 20px !important;
+  /* Rounded left corners */
+}
+
+.search-input {
+  border-radius: 0; /* Remove borders around the input field */
+  border-left: 0; /* Remove the left border between select and input */
+  border-right: 0; /* Remove the right border */
+  border-radius: 0 20px 20px 0; /* Rounded right corners */
+  font-size: 20px !important;
+  
+}
+
+.search-button {
+/* Match button with the input */
+  background-color: #28a745; /* Green background */
+  border-color: #28a745; /* Match button border */
+  color: white; /* White text */
+  padding: 10px 20px;
+  font-size: 1rem;
+  transition: background-color 0.3s ease; /* Hover effect */
+  font-size: 20px !important;
+}
+
+.search-button:hover {
+  background-color: #218838; /* Darker green on hover */
+  border-color: #218838;
+}
+
+.input-group {
+  display: flex;
+  justify-content: center;
+  
+}

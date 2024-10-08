@@ -1,6 +1,6 @@
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import ColorSchemesExample from "./Navabr/Navbar";
+import JobNavbar  from "./Navbar/Navbar";
 import FilterComponent from "./Filters/Filter";
 
 function App() {
@@ -8,7 +8,7 @@ function App() {
     <>
       {/* Fixed Navbar - Stays at the top but doesn't overlap */}
       <div style={{ position: "fixed", top: 0, width: "100%", zIndex: 1000 }}>
-        <ColorSchemesExample />
+        <JobNavbar />
         <FilterComponent />
       </div>
 

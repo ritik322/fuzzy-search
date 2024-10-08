@@ -1,10 +1,10 @@
-import { User } from "../Models/user.model.js";
+import { Criminal } from "../Models/criminal.model.js";
 import uploadCloudinary from "../Utils/cloudinary.js";
 
-const getUser = async(req, res) => {
+const getCriminal = async(req, res) => {
   const {id} = req.body
-  const user = await User.findById({_id: id}).select("-password");
-  if(!user) {res.status(400).json({message: "user not found", success: false})}
+  const criminal = await Criminal.findById({_id: id});
+  if(!criminal) {res.status(400).json({message: "Criminal not found", success: false})}
 
   res.status(200).json({data: user,success: true})
 }

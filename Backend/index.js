@@ -1,7 +1,7 @@
 import { connectDb } from "./DB/index.js";
 import dotenv from 'dotenv'
 import { app } from "./app.js";
-import {spawn} from 'child_process';
+
 
 dotenv.config()
 

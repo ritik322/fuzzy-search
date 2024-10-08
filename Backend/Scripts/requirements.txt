@@ -1,0 +1,6 @@
+rapidfuzz
+jellyfish
+transformers
+torch
+scikit-learn
+sentence-transformers

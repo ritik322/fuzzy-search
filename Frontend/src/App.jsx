@@ -1,43 +1,23 @@
-import React, { useState } from 'react';
+import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import ColorSchemesExample from './Navbar/Navbar'; // Your Navbar component
-import Login from './Login/Login'; // Import the login page
+import JobNavbar  from "./Navbar/Navbar";
+import FilterComponent from "./Filters/Filter";
 
 function App() {
-  const [user, setUser] = useState({
-    isLoggedIn: false,
-    name: ""
-  });
-
-  const handleLogin = (username) => {
-    setUser({
-      isLoggedIn: true,
-      name: username
-    });
-  };
-
-  const handleLogout = () => {
-    setUser({
-      isLoggedIn: false,
-      name: ""
-    });
-  };
-
   return (
-    <div>
-      {/* Show Navbar with user login/logout functionality */}
-      <ColorSchemesExample user={user} onLogout={handleLogout} onLogin={handleLogin} />
+    <>
+      {/* Fixed Navbar - Stays at the top but doesn't overlap */}
+      <div style={{ position: "fixed", top: 0, width: "100%", zIndex: 1000 }}>
+        <JobNavbar />
+        <FilterComponent />
+      </div>
 
-      {/* Conditionally show login page or nothing when logged in */}
-      {!user.isLoggedIn ? (
-        <Login onLogin={handleLogin} />
-      ) : (
-        // Leaving this section empty when logged in
-        <div className="home-content">
-          {/* You can add any additional components for logged-in users here if needed */}
-        </div>
-      )}
-    </div>
+      {/* Content Below the Navbar */}
+      <div style={{ paddingTop: '280px', marginLeft: "400px" }}> {/* Add top padding equal to navbar height */}
+          
+      </div>
+      
+    </>
   );
 }
 

@@ -1,0 +1,70 @@
+/* Navbar.css */
+.navbar-3d {
+  background-color: #212529; /* Dark background for the navbar */
+  border: none; /* Remove border for a cleaner look */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2), 0 4px 30px rgba(0, 0, 0, 0.1); /* Strong shadow for depth */
+  transition: box-shadow 0.3s ease, transform 0.3s ease; /* Smooth transition */
+}
+
+.navbar-3d:hover {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 10px 30px rgba(0, 0, 0, 0.15); /* Deeper shadow on hover */
+  transform: translateY(-2px); /* Lift effect on hover */
+}
+
+.navbar-brand {
+  font-weight: bold;
+  font-size: 1.5rem;
+  color: #ffc107; /* Vibrant yellow for brand */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4); /* Shadow for brand name */
+}
+
+.nav-link {
+  font-weight: 500;
+  color: #ffffff; /* White text for links */
+  transition: color 0.3s; /* Smooth color transition */
+}
+
+.nav-link:hover {
+  color: #ffc107; /* Vibrant yellow on hover */
+  text-shadow: 0 0 5px rgba(255, 204, 0, 0.5); /* Glowing effect on hover */
+}
+
+/* Add neon effect for active links */
+.nav-link.active {
+  color: #00ff00; /* Neon green */
+  text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00; /* Neon glow effect */
+}
+
+.form-control {
+  background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent background */
+  border: 1px solid #ced4da; /* Border color */
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1); /* Inner shadow */
+  transition: box-shadow 0.3s; /* Smooth transition */
+}
+
+.form-control:focus {
+  box-shadow: 0 0 8px rgba(255, 204, 0, 0.5); /* Shadow on focus */
+  border-color: #ffc107; /* Border color on focus */
+}
+
+/* Add space between search bar and login/logout button */
+.navbar .d-flex {
+  margin-right: 20px; /* Space between search bar and login/logout */
+}
+
+/* Oval-shaped buttons for search and login */
+.navbar .btn-3d {
+  border-radius: 50px; /* Make the button oval */
+  padding: 10px 20px; /* Adjust padding to enhance oval shape */
+  background-color: #007bff; /* Blue color for buttons */
+  color: white; /* White text */
+  border: none; /* Remove default border */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Shadow for button */
+  transition: box-shadow 0.3s ease, transform 0.3s ease; /* Smooth transition */
+  margin-left: 20px; /* Space between search button and login/logout */
+}
+
+.btn-3d:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3); /* Shadow on hover */
+  transform: translateY(-1px); /* Lift effect on hover */
+}

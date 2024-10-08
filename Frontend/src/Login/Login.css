@@ -1,0 +1,82 @@
+/* Login.css */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #00c6ff, #0072ff); /* Bright blue gradient background */
+  }
+  
+  .login-box {
+    background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white for a glass effect */
+    padding: 40px;
+    border-radius: 15px; /* More rounded corners */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); /* Soft shadow for depth */
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    backdrop-filter: blur(10px); /* Blurring background behind the box */
+  }
+  
+  h2 {
+    margin-bottom: 20px;
+    font-family: 'Arial', sans-serif;
+    color: #333;
+  }
+  
+  .input-group {
+    margin-bottom: 20px;
+    text-align: left;
+  }
+  
+  .input-group label {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: #555;
+  }
+  
+  .input-group input {
+    width: 100%;
+    padding: 12px; /* Increased padding for a better feel */
+    font-size: 16px;
+    border-radius: 8px; /* More rounded corners */
+    border: 1px solid #ccc; /* Border color */
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1); /* Inner shadow */
+    transition: border-color 0.3s, box-shadow 0.3s; /* Smooth transition */
+  }
+  
+  .input-group input:hover {
+    border-color: #0072ff; /* Change border color on hover */
+  }
+  
+  .input-group input:focus {
+    box-shadow: 0 0 8px rgba(0, 114, 255, 0.5); /* Shadow on focus */
+    border-color: #0072ff; /* Border color on focus */
+    outline: none; /* Remove outline */
+  }
+  
+  .login-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #0072ff; /* Bright blue button */
+    color: white;
+    font-size: 16px;
+    border: none; /* Remove default border */
+    border-radius: 8px; /* More rounded corners */
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s; /* Smooth transition */
+  }
+  
+  .login-btn:hover {
+    background-color: #005bb5; /* Darker blue on hover */
+    transform: scale(1.05); /* Slight scale effect on hover */
+  }
+  
+  .error-message {
+    color: red;
+    font-size: 14px;
+    margin-bottom: 10px;
+    font-weight: bold; /* Make the error message bold */
+  }
+  

@@ -2,170 +2,149 @@ import { Criminal } from "../Models/criminal.model.js";
 import uploadCloudinary from "../Utils/cloudinary.js";
 
 const getCriminal = async(req, res) => {
-  const {id} = req.body
+  const {id} = req.params;
   const criminal = await Criminal.findById({_id: id});
   if(!criminal) {res.status(400).json({message: "Criminal not found", success: false})}
 
-  res.status(200).json({data: user,success: true})
+  res.status(200).json({data: criminal,success: true})
 }
 
-const registerUser = async (req, res) => {
-  const { username, email, password, post, role, policeStationId, contact } =
-    req.body;
+const getAllCriminals = async(req, res) => {
+  try {
+    const criminals = await Criminal.find();
+    return res.json(criminals);
+  } catch (error) {
+    return res.status(500).json({ message: "Error" + error.toString() });
+  }
+}
 
-  const isCreatedUser = await User.findOne({
-    $or: [{ username }, { email }],
+const addCriminal = async (req, res) => {
+  const { name, photo, inCustody, age, description, gender, location, crime } = req.body;
+
+  const isCreatedCriminal = await Criminal.findOne({
+    $and: [{ name }, { gender }, {age}, {location}],
   });
-  if (isCreatedUser) {
-    throw new Error(409, "User aleardy exists");
+  if (isCreatedCriminal) {
+    throw new Error(409, "Criminal aleardy exists");
   }
 
   if (
-    [username, email, password, post, role, policeStationId, contact].some(
+    [name, inCustody, description, gender, location, crime].some(
       (val) => val.trim() === ""
     )
   ) {
-    throw new Error(400, "All fields are required");
+    throw new Error(400, "name, inCustody, description, gender, location, Crime Values are Required");
   }
   const localPathName = req.file?.path;
-  if (!localPathName) throw new Error(400, "Avatar is required");
+  if (!localPathName) throw new Error(400, "Photo is required");
 
   const uploadResult = await uploadCloudinary(localPathName);
 
-  const createdUser = await User.create({
-    username,
-    avatar: uploadResult.url,
-    email,
-    password,
-    post,
-    role,
-    policeStationId,
-    contact,
+  const createdCriminal = await Criminal.create({
+    name,
+    photo: uploadResult.url,
+    inCustody,
+    age,
+    description,
+    gender,
+    location,
+    crime,
   });
 
-  const userCreated = await User.findOne({ _id: createdUser._id }).select(
-    "-password"
-  );
-  if (!userCreated)
-    throw new Error(500, "Something went wrong while registering ");
-  const auth_token = userCreated.generateAccessToken();
+  const criminalCreated = await Criminal.findOne({ _id: createdCriminal._id });
+  if (!criminalCreated)
+    throw new Error(500, "Something went wrong while creating Criminal");
   res
-    .cookie("auth_token", auth_token, {
-      httpOnly: true,
-      secure: true,
-      maxAge: Process.env.ACCESS_TOKEN_EXPIRY,
-    })
     .status(201)
     .json({
       statusCode: 201,
-      message: "user created successfully",
-      isLogin: true,
-      data: userCreated,
+      message: "Criminal created successfully",
+      data: criminalCreated,
     });
 };
 
-const loginUser = async (req, res) => {
-  const { username, email, password } = req.body;
-
-  if (!username && !email) {
-    throw new Error(400, "username or email is needed");
-  }
-  if (!password) {
-    throw new Error(400, "password is required");
-  }
-
-  const user = await User.findOne({
-    $or: [{ username }, { email }],
-  });
-  if (!user) {
-    throw new Error(404, "User not found!");
-  }
-
-  const isPasswordCorrect = await user.isPasswordCorrect(password);
-
-  if (!isPasswordCorrect) {
-    throw new Error(401, "Incorrect user credentials");
-  }
-
-  const loggedInUser = await User.findOne({ _id: user._id }).select(
-    "-password "
-  );
-  const auth_token = loggedInUser.generateAccessToken();
-  res
-    .status(200)
-    .cookie("auth_token", auth_token, {
-      httpOnly: true,
-      secure: true,
-      maxAge: process.env.ACCESS_TOKEN_EXPIRY,
-    })
-    .json({
-      statusCode: 200,
-      message: "user logged in",
-      isLogin: true,
-      data: loggedInUser,
-    });
-};
-
-const updateUser = async (req, res) => {
+const updateCriminal = async (req, res) => {
   try {
-    const { email, contact, policeStationId, post } = req.body;
-    const { _id } = req.user;
-
+    const { name, inCustody, age, description, location, crime} = req.body;
+    const {_id} = req.params;
     const updatedData = {};
 
-    if (email) updatedData.email = email;
-    if (contact) updatedData.contact = contact;
-    if (policeStationId) updatedData.policeStationId = policeStationId;
-    if (post) updatedData.post = post;
+    if (name) updatedData.name = name;
+    if (inCustody) updatedData.inCustody = inCustody;
+    if (age) updatedData.age = age;
+    if (description) updatedData.description = description;
+    if (location) updatedData.description = location;
+    if (crime) updatedData.description = crime;
 
     if (Object.keys(updatedData).length === 0) {
       return res.status(400).json({ message: "No fields provided to update" });
     }
 
-    const updatedUser = await User.findByIdAndUpdate(_id, updatedData, {
+    const updatedCriminal = await Criminal.findByIdAndUpdate(_id, updatedData, {
       new: true, // Return the updated document
       runValidators: true, // Run schema validators
-    }).select("-password");
+    });
 
-    if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
+    if (!updatedCriminal) {
+      return res.status(404).json({ message: "Criminal not found" });
     }
 
     // Respond with the updated user data
     res.status(200).json({
-      message: "User updated successfully",
+      message: "Criminal updated successfully",
       updated: true,
-      user: updatedUser,
+      criminal: updatedCriminal,
     });
   } catch (error) {
-    console.error("Error updating user:", error);
+    console.error("Error updating criminal:", error);
     res.status(500).json({ message: "Server error", error });
   }
 };
 
-const deleteUser = async (req, res) => {
+const deleteCriminal = async (req, res) => {
   try {
-    const { _id } = req.body;
+    const { _id } = req.params;
 
-    const deletedUser = await User.findByIdAndDelete(_id);
+    const deletingCriminal = await Criminal.findByIdAndDelete(_id);
 
-    if (!deletedUser) {
-      return res.status(404).json({ message: "User not found" });
+    if (!deletingCriminal) {
+      return res.status(404).json({ message: "Criminal not found" });
     }
 
     res
       .status(200)
       .json({
-        message: "User deleted successfully",
+        message: "Criminal deleted successfully",
         deleted: true,
-        user: deletedUser,
+        criminal: deletingCriminal,
       });
   } catch (error) {
-    console.error("Error deleting user:", error);
+    console.error("Error deleting Criminal:", error);
     res.status(500).json({ message: "Server error", error });
   }
 };
 
+const deleteCriminals = async(req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids)) {
+      return res.status(400).json({ message: "IDs are required" });
+    }
+      // Step 1: Find companies and collect their associated HR IDs
+      const criminals = await Criminal.find({ _id: { $in: ids } });
+      if (!criminals || criminals.length === 0) {
+        return res.status(404).json({ message: "Criminals not found" });
+      }
 
+      const criminalDeleteResult = await Criminal.deleteMany({ _id: { $in: ids } });
 
-export { registerUser, loginUser, updateUser, deleteUser,getUser };
+      return res.status(200).json({
+        message: "Criminals deleted",
+        criminalDeleteResult: criminalDeleteResult.deletedCount,
+      });
+  } catch (error) {
+      console.error("Error deleting Criminals:", error);
+      res.status(500).json({ message: "Server error", error });
+  }
+}; 
+export { updateCriminal, addCriminal, deleteCriminal, deleteCriminals, getCriminal, getAllCriminals };

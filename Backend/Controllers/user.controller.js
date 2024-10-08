@@ -19,8 +19,7 @@ const getAllUser = async (req, res) => {
 };
 
 const registerUser = async (req, res) => {
-  const { username, email, password, post, role, policeStationId, contact } =
-    req.body;
+  const { username, email, password, post, role, policeStationId, contact } = req.body;
 
   const isCreatedUser = await User.findOne({
     $or: [{ username }, { email }],

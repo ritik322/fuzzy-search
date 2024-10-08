@@ -1,13 +1,22 @@
 import { User } from "../Models/user.model.js";
 import uploadCloudinary from "../Utils/cloudinary.js";
 
-const getUser = async(req, res) => {
-  const {id} = req.body
-  const user = await User.findById({_id: id}).select("-password");
-  if(!user) {res.status(400).json({message: "user not found", success: false})}
+const getUser = async (req, res) => {
+  const { id } = req.params;
+  const user = await User.findById({ _id: id }).select("-password");
+  if (!user) {
+    res.status(400).json({ message: "user not found", success: false });
+  }
+  res.status(200).json({ data: user, success: true });
+};
 
-  res.status(200).json({data: user,success: true})
-}
+const getAllUser = async (req, res) => {
+  const users = await User.find({});
+  if (!users)
+    res.status(400).json({ message: "no user exist", success: false });
+
+  res.status(200).json({ message: "all users retrieved", success: true, data: users });
+};
 
 const registerUser = async (req, res) => {
   const { username, email, password, post, role, policeStationId, contact } =
@@ -145,27 +154,23 @@ const updateUser = async (req, res) => {
 
 const deleteUser = async (req, res) => {
   try {
-    const { _id } = req.body;
+    const { id } = req.params;
 
-    const deletedUser = await User.findByIdAndDelete(_id);
+    const deletedUser = await User.findByIdAndDelete({_id: id});
 
     if (!deletedUser) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    res
-      .status(200)
-      .json({
-        message: "User deleted successfully",
-        deleted: true,
-        user: deletedUser,
-      });
+    res.status(200).json({
+      message: "User deleted successfully",
+      deleted: true,
+      user: deletedUser,
+    });
   } catch (error) {
     console.error("Error deleting user:", error);
     res.status(500).json({ message: "Server error", error });
   }
 };
 
-
-
-export { registerUser, loginUser, updateUser, deleteUser,getUser };
+export { registerUser, loginUser, updateUser, deleteUser, getUser, getAllUser };

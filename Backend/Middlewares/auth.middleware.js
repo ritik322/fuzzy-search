@@ -2,7 +2,8 @@ import jwt from "jsonwebtoken";
 import { User } from "../Models/user.model.js";
 
 const authenticateUser = async (req, _, next) => {
-  const { auth_token } = req.cookies;
+  try {
+    const { auth_token } = req.cookies;
 
   if (!auth_token) {
     throw new Error(400, "You are not authorized to performed this operation");
@@ -24,6 +25,12 @@ const authenticateUser = async (req, _, next) => {
 
   req.user = user;
   next();
+    
+  } catch (error) {
+    console.log(error);
+    throw new Error(error);
+  }
+  
 };
 
 export { authenticateUser };

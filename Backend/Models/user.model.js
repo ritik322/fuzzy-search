@@ -17,6 +17,7 @@ const userSchema = new mongoose.Schema(
     },
     post: { type: String, required: true },
     policeStationId: { type: String, required: true },
+    contact: String,
     criminals: [
       {
         type: mongoose.Schema.Types.ObjectId,

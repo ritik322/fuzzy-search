@@ -19,68 +19,73 @@ const getAllCriminals = async(req, res) => {
 }
 
 const addCriminal = async (req, res) => {
-  const { name, photo, inCustody, age, description, gender, location, crime } = req.body;
-
-  const isCreatedCriminal = await Criminal.findOne({
-    $and: [{ name }, { gender }, {age}, {location}],
-  });
-  if (isCreatedCriminal) {
-    throw new Error(409, "Criminal aleardy exists");
-  }
-
-  if (
-    [name, inCustody, description, gender, location, crime].some(
-      (val) => val.trim() === ""
-    )
-  ) {
-    throw new Error(400, "All fields are Required");
-  }
-  const localPathName = req.file?.path;
-  if (!localPathName) throw new Error(400, "Photo is required");
-
-  const uploadResult = await uploadCloudinary(localPathName);
-
-  const createdCriminal = await Criminal.create({
-    name,
-    photo: uploadResult.url,
-    inCustody,
-    age,
-    description,
-    gender,
-    location,
-    crime,
-  });
-
-  const criminalCreated = await Criminal.findOne({ _id: createdCriminal._id });
-  if (!criminalCreated)
-    throw new Error(500, "Something went wrong while creating Criminal");
-  res
-    .status(201)
-    .json({
-      statusCode: 201,
-      message: "Criminal created successfully",
-      data: criminalCreated,
+  try {
+    const { name, inCustody, age, description, gender, location, crime } = req.body;
+  
+    const isCreatedCriminal = await Criminal.findOne({
+      $and: [{ name }, { gender }, {age}, {location}],
     });
+    if (isCreatedCriminal) {
+      throw new Error(409, "Criminal aleardy exists");
+    }
+  
+    if (
+      [name, inCustody, description, gender, location, crime].some(
+        (val) => val === ""
+      )
+    ) {
+      throw new Error(400, "All fields are Required");
+    }
+    const localPathName = req.file?.path;
+    if (!localPathName) throw new Error(400, "Photo is required");
+  
+    const uploadResult = await uploadCloudinary(localPathName);
+  
+    const createdCriminal = await Criminal.create({
+      name,
+      photo: uploadResult.url,
+      inCustody,
+      age,
+      description,
+      gender,
+      location,
+      crime,
+    });
+  
+    const criminalCreated = await Criminal.findOne({ _id: createdCriminal._id });
+    if (!criminalCreated)
+      throw new Error(500, "Something went wrong while creating Criminal");
+    res
+      .status(201)
+      .json({
+        statusCode: 201,
+        message: "Criminal created successfully",
+        data: criminalCreated,
+      });
+  } catch (error) {
+    console.log("Couldn't create Criminal: ", error);
+    res.status(500).send("Something Went Wrong");
+  }
 };
 
 const updateCriminal = async (req, res) => {
   try {
     const { name, inCustody, age, description, location, crime} = req.body;
-    const {_id} = req.params;
+    const {id} = req.params;
     const updatedData = {};
-
+    
     if (name) updatedData.name = name;
     if (inCustody) updatedData.inCustody = inCustody;
     if (age) updatedData.age = age;
     if (description) updatedData.description = description;
-    if (location) updatedData.description = location;
-    if (crime) updatedData.description = crime;
+    if (location) updatedData.location = location;
+    if (crime) updatedData.crime = crime;
 
     if (Object.keys(updatedData).length === 0) {
       return res.status(400).json({ message: "No fields provided to update" });
     }
 
-    const updatedCriminal = await Criminal.findByIdAndUpdate(_id, updatedData, {
+    const updatedCriminal = await Criminal.findByIdAndUpdate({_id:id}, updatedData, {
       new: true, // Return the updated document
       runValidators: true, // Run schema validators
     });
@@ -103,9 +108,9 @@ const updateCriminal = async (req, res) => {
 
 const deleteCriminal = async (req, res) => {
   try {
-    const { _id } = req.params;
+    const { id } = req.params;
 
-    const deletingCriminal = await Criminal.findByIdAndDelete(_id);
+    const deletingCriminal = await Criminal.findByIdAndDelete({_id: id});
 
     if (!deletingCriminal) {
       return res.status(404).json({ message: "Criminal not found" });
@@ -127,6 +132,7 @@ const deleteCriminal = async (req, res) => {
 const deleteCriminals = async(req, res) => {
   try {
     const { ids } = req.body;
+    console.log(ids);
     if (!ids || !Array.isArray(ids)) {
       return res.status(400).json({ message: "IDs are required" });
     }

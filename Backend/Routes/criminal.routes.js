@@ -10,10 +10,10 @@ const criminalRouter = express.Router()
 
 criminalRouter.route("/get-criminal/:id").get(getCriminal)
 criminalRouter.route("/get-all-criminals").get(getAllCriminals)
-criminalRouter.route("/add-criminal").post(upload.single("avatar"), addCriminal)
+criminalRouter.route("/add-criminal").post(upload.single("photo"), addCriminal)
 criminalRouter.route("/update-criminal/:id").post(updateCriminal)
 criminalRouter.route("/delete-criminal/:id").post(deleteCriminal)
 criminalRouter.route("/delete-criminals").post(deleteCriminals)
-criminalRouter.post('/add-multiple-criminals', uploadFile.single('file'), addMultipleCriminals);
-criminalRouter.get('/export-criminals', exportCriminalData);
+criminalRouter.route('/add-multiple-criminals').post(uploadFile.single('file'), addMultipleCriminals);
+criminalRouter.route('/export-criminals').get(exportCriminalData);
 export default criminalRouter

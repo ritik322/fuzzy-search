@@ -3,6 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import ColorSchemesExample from "./Navbar/Navbar";
 import FilterComponent from "./Filters/Filter";
 import SpeechToText from './speechToText/speechToText';
+import JobNavbar from './Navbar/Navbar';
 
 function App() {
   const [showUserTable, setShowUserTable] = useState(false);  // Add state to control UserTable visibility
@@ -16,9 +17,7 @@ function App() {
       </div>
 
       {/* Content Below the Navbar */}
-      <div style={{ paddingTop: '280px', marginLeft: "400px" }}> {/* Add top padding equal to navbar height */}
-          
-      </div>
+      {/* <div style={{ paddingTop: '280px', marginLeft: "400px" }}> Add top padding equal to navbar height</div> */}
       
       
     </>

@@ -34,7 +34,6 @@ const JobNavbar = ({ setShowUserTable }) => {
               <Nav.Link href="#find-jobs" className="nav-item">Home</Nav.Link>
               <Nav.Link href="#find-talent" className="nav-item">Table</Nav.Link>
               <Nav.Link href="#manage-users" className="nav-item" onClick={handleManageUsersClick}>Manage Users</Nav.Link> {/* Trigger the UserTable visibility */}
-              <Nav.Link href="#about-us" className="nav-item">Criminal Info</Nav.Link>
               <Nav.Link href="#about-us" className="nav-item">Import</Nav.Link>
               <Nav.Link href="#about-us" className="nav-item">Login</Nav.Link>
             </Nav>

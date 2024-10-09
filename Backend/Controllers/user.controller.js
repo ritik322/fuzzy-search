@@ -172,4 +172,19 @@ const deleteUser = async (req, res) => {
   }
 };
 
-export { registerUser, loginUser, updateUser, deleteUser, getUser, getAllUser };
+const logoutUser = async (req,res) => {
+  const { auth_token } = req.cookies;
+
+  await User.findOneAndUpdate(
+    { _id: req.user.id },
+    { $unset: { refreshToken: 1 } },
+    { new: true }
+  );
+
+  res
+    .status(200)
+    .clearCookie("auth_token", { httpOnly: true, secure: true })
+    .json({message: "Logout successfull", success: true});
+}
+
+export { registerUser, loginUser, updateUser, deleteUser, getUser, getAllUser, logoutUser };

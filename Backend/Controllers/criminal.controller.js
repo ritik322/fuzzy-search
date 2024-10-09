@@ -33,7 +33,7 @@ const addCriminal = async (req, res) => {
       (val) => val.trim() === ""
     )
   ) {
-    throw new Error(400, "name, inCustody, description, gender, location, Crime Values are Required");
+    throw new Error(400, "All fields are Required");
   }
   const localPathName = req.file?.path;
   if (!localPathName) throw new Error(400, "Photo is required");

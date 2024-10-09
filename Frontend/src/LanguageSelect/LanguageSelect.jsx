@@ -4,74 +4,45 @@ import { FaMicrophone } from 'react-icons/fa';
 import './SearchBar.css';
 
 function TwoSearchBar() {
-  const [searchQuery, setSearchQuery] = useState('');
   const [isListening, setIsListening] = useState(false);
-  const [language, setLanguage] = useState('hi-IN'); // Default to Hindi
-  const mediaRecorderRef = useRef(null);
-  const audioChunksRef = useRef([]);
+  const [transcript, setTranscript] = useState('');
+  const [language, setLanguage] = useState('en-US'); // Default language
+  let recognition;
 
-  // Function to start listening and recording audio
-  const startListening = () => {
-    setIsListening(true);
-    navigator.mediaDevices.getUserMedia({ audio: true })
-      .then((stream) => {
-        const mediaRecorder = new MediaRecorder(stream);
-        mediaRecorderRef.current = mediaRecorder;
-        audioChunksRef.current = [];
-
-        mediaRecorder.ondataavailable = (event) => {
-          audioChunksRef.current.push(event.data);
-        };
-
-        mediaRecorder.onstop = () => {
-          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-          sendAudioToBackend(audioBlob);
-        };
-
-        mediaRecorder.start();
-      })
-      .catch((err) => {
-        console.error('Error accessing microphone:', err);
-      });
-  };
-
-  // Function to stop listening and recording audio
-  const stopListening = () => {
-    setIsListening(false);
-    if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop(); // Stops recording and triggers onstop
+  const initializeRecognition = () => {
+    if (!('webkitSpeechRecognition' in window)) {
+      alert("Speech Recognition not supported in this browser.");
+      return;
     }
+
+    recognition = new window.webkitSpeechRecognition();
+    recognition.lang = language; // Set language dynamically
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+
+    // Event: When speech is detected
+    recognition.onresult = (event) => {
+      const currentTranscript = event.results[event.resultIndex][0].transcript;
+      setTranscript(currentTranscript);
+    };
+
+    // Event: When recording stops
+    recognition.onend = () => {
+      setIsListening(false);
+    };
   };
 
-  // Function to send recorded audio to the backend
-  const sendAudioToBackend = (audioBlob) => {
-    const formData = new FormData();
-    formData.append('audio', audioBlob);
-    formData.append('language', language); // Send selected language to backend
-
-    fetch('http://127.0.0.1:5000/record', {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'Accept': 'application/json',  // Add this header
-      }
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.text) {
-          setSearchQuery(data.text); // Display translated text in English
-        } else {
-          console.error('Error recognizing speech:', data.error);
-        }
-      })
-      .catch((error) => {
-        console.error('Error sending audio to backend:', error);
-      });
+  // Start recording
+  const startRecording = () => {
+    setIsListening(true);
+    initializeRecognition();
+    recognition.start();
   };
 
-  // Handle language selection
-  const handleLanguageChange = (e) => {
-    setLanguage(e.target.value); // Update selected language
+  // Stop recording
+  const stopRecording = () => {
+    recognition.stop();
+    setIsListening(false);
   };
 
   return (
@@ -81,11 +52,15 @@ function TwoSearchBar() {
           <Form.Select
             aria-label="Search category"
             className="search-select"
-            onChange={handleLanguageChange}
+            value={language} 
+            onChange={(e)=>setLanguage(e.target.value)}
           >
-            <option value="hi-IN">Hindi</option>
-            <option value="pa-IN">Punjabi</option>
             <option value="en-US">English</option>
+            <option value="es-ES">Spanish</option>
+            <option value="fr-FR">French</option>
+            <option value="de-DE">German</option>
+            <option value="hi-IN">Hindi</option>
+          
           </Form.Select>
 
           <Form.Control
@@ -93,13 +68,13 @@ function TwoSearchBar() {
             placeholder="Search..."
             aria-label="Search"
             className="search-input"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={transcript}
+            onChange={(e) => setTranscript(e.target.value)}
           />
 
           <Button
             variant="outline-secondary"
-            onClick={isListening ? stopListening : startListening}
+            onClick={isListening ? stopRecording : startRecording}
           >
             <FaMicrophone />
           </Button>

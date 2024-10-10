@@ -231,9 +231,6 @@ const UserTable = () => {
       for (const key in editData) {
         formData.append(key, editData[key]);
       }
-      for (let [key, value] of formData.entries()) {
-        console.log(`${key}:`, value);
-      }
       
       response = await axios.post('http://localhost:3000/api/v1/user/register-user', formData,{
         headers: {
@@ -255,23 +252,7 @@ const UserTable = () => {
 
 
   return (
-    <Box sx={{ p: 3, backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-      {/* Title */}
-      <h1
-        style={{
-          fontSize: '2rem', // Increased font size
-          fontWeight: 'bold',
-          textAlign: 'center',
-          backgroundColor: '#1e90ff', // Background color
-          color: 'white', // Text color for better contrast
-          padding: '10px', // Padding for spacing inside the element
-          borderRadius: '4px', // Rounded corners for a polished look
-          marginBottom: '20px' // Margin bottom to separate from search bar
-        }}
-      >
-        User Management
-      </h1>
-
+    <Box sx={{ p: 8, backgroundColor: '#f8f9fa', minHeight: '100vh' }} >
       {/* Search Bar and Add User Button */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <TextField
@@ -299,13 +280,7 @@ const UserTable = () => {
         <Table aria-label="user table">
           <TableHead sx={{ backgroundColor: '#f1f1f1' }}>
             <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox
-                  indeterminate={selectedUsers.length > 0 && selectedUsers.length < filteredUsers.length}
-                  checked={filteredUsers.length > 0 && selectedUsers.length === filteredUsers.length}
-                  onChange={handleSelectAllClick}
-                />
-              </TableCell>
+             
               <TableCell sx={{ fontWeight: 'bold' }}>Photo</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}>Username</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}>Email</TableCell>
@@ -318,12 +293,7 @@ const UserTable = () => {
           <TableBody>
             {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((user, index) => (
               <TableRow key={index} hover>
-                <TableCell padding="checkbox">
-                  <Checkbox
-                    checked={isSelected(user._id)}
-                    onChange={(event) => handleCheckboxClick(event, user._id)}
-                  />
-                </TableCell>
+                
                 <TableCell>
                   <img src={user.avatar} alt="User" style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
                 </TableCell>

@@ -30,12 +30,11 @@ const getAllCriminals = async(req, res) => {
 const addCriminal = async (req, res) => {
   try {
     const { name, inCustody, age, description, gender, location } = req.body;
-    console.log("name: ", name, ", inCustody: ", inCustody, ", age: ", age, ", description: ", description, ", gender: ", gender, "location: ", location);
     const isCreatedCriminal = await Criminal.findOne({
       $and: [{ name }, { gender }, {age}, {location}],
     });
     if (isCreatedCriminal) {
-      throw new Error(409, "Criminal aleardy exists");
+      throw new Error("Criminal aleardy exists");
     }
   
     if (
@@ -43,7 +42,7 @@ const addCriminal = async (req, res) => {
         (val) => val === ""
       )
     ) {
-      throw new Error(400, "All fields are Required");
+      throw new Error("All fields are Required");
     }
     const localPathName = req.file?.path;
     
@@ -73,8 +72,8 @@ const addCriminal = async (req, res) => {
         data: criminalCreated,
       });
   } catch (error) {
-    console.log("Couldn't create Criminal: ", error);
-    res.status(500).send("Something Went Wrong");
+    console.log("Couldn't create Criminal: ", error.message);
+    res.status(400).json({message: "something went wrong"});
   }
 };
 

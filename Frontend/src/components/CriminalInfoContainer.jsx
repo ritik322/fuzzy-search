@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Form, Button } from "react-bootstrap";
 import CriminalTable from './CriminalTable/CriminalTable';
 
-const CriminalInfoContainer = () => {
+const CriminalInfoContainer = ({tableData = []}) => {
   const [crimeTypes, setCrimeTypes] = useState({
     Homicide: false,
     Assault: false,
@@ -12,6 +12,7 @@ const CriminalInfoContainer = () => {
   });
 
   const [thresholdRange, setThresholdRange] = useState([0, 100]);
+  const [filteredData, setFilteredData] = useState(tableData)
 
   const handleThresholdChange = (e) => {
     const value = e.target.value.split(",");
@@ -29,6 +30,35 @@ const CriminalInfoContainer = () => {
     });
     setThresholdRange([0, 100]);
   };
+
+  useEffect(() => {
+    const filterCriminalData = () => {
+      const data = tableData || []; // Use an empty array if tableData is null
+
+      // Convert crimeTypes object to an array of selected crime types
+      const selectedCrimeTypes = Object.keys(crimeTypes).filter(
+        (crime) => crimeTypes[crime]
+      );
+
+      // Filter tableData based on selected crime types and threshold range
+      const filtered = data.filter((record) => {
+        // Ensure the record has a 'crime' array and 'score' property before filtering
+        const matchesCrimeType = selectedCrimeTypes.length
+          ? selectedCrimeTypes.some((crime) => record.crime && record.crime.includes(crime))
+          : true;
+
+        // Ensure that the record has a 'score' property for threshold filtering
+        const matchesThreshold =
+          record.score >= thresholdRange[0] && record.score <= thresholdRange[1];
+
+        return matchesCrimeType && matchesThreshold;
+      });
+
+      setFilteredData(filtered);
+    };
+
+    filterCriminalData();
+  }, [crimeTypes, thresholdRange, tableData]); // Ensure dependencies are correct
   return (
     <div className="ml-4 space-y-4 section-container">
       <div>
@@ -137,14 +167,21 @@ const CriminalInfoContainer = () => {
                 min="0"
                 max="100"
                 step="5"
-                value={thresholdRange}
-                onChange={handleThresholdChange}
-                multiple
+                value={thresholdRange[0]} // Use only the first element for range
+                onChange={(e) => setThresholdRange([Number(e.target.value), thresholdRange[1]])}
+              />
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="5"
+                value={thresholdRange[1]} // Use only the second element for range
+                onChange={(e) => setThresholdRange([thresholdRange[0], Number(e.target.value)])}
               />
             </div>
           </div>
         </div>
-        <div className="grow"><CriminalTable/></div>  
+        <div className="grow"><CriminalTable tableData={filteredData}/></div>  
       </div>
     </div>
   );

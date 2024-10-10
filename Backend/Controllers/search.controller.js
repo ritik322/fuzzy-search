@@ -1,18 +1,9 @@
 import { spawn } from 'child_process';
-
-const criminals = [
-    { name: 'muhammad ali' },
-    { name: 'suresh' },
-    { name: 'oleg ivanov' },
-    { name: 'jose' },
-    { name: 'chloe' },
-    { name: 'taro yamada' },
-    { name: 'giovanni rossi' },
-    { name: 'francois dupont' },
-  ];
+import { Criminal } from '../Models/criminal.model.js';
 
 const search = async (req, res) => {
   const { name } = req.body;
+  const criminals = await Criminal.find();
   
   // For each criminal in the database, call the Python script and process the result
   const pythonProcess = spawn('python', ['./scripts/script.py', name, JSON.stringify(criminals)]);
@@ -28,7 +19,20 @@ const search = async (req, res) => {
 
     pythonProcess.on('close', (code) => {
         if (code === 0) {
-            res.json(JSON.parse(result)); // Send the results back to the frontend
+            
+            try {
+                // Parse the result from the Python script
+                const parsedResult = JSON.parse(result);
+        
+                // Sort the results in descending order by the 'score' field
+                const sortedResult = parsedResult.sort((a, b) => b.criminal_data.score - a.criminal_data.score);
+        
+                // Send the sorted results back to the frontend
+                res.json(sortedResult);
+              } catch (err) {
+                console.error('Error parsing or sorting the result:', err);
+                res.status(500).send('Error processing the name');
+              }
         } else {
             res.status(500).send('Error processing the name');
         }

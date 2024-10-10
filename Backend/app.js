@@ -4,7 +4,7 @@ import cors from "cors"; // Import cors
 import userRouter from "./Routes/user.routes.js";
 import criminalRouter from './Routes/criminal.routes.js';
 import { authenticateUser } from "./Middlewares/auth.middleware.js";
-import searchRouter from "./Routes/search.route.js";
+import searchRouter from "./Routes/search.routes.js";
 
 const app = express();
 

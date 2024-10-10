@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema(
     avatar: String,
     role: {
       type: String,
-      required: true,
+      default: "user",
     },
     post: { type: String, required: true },
     policeStationId: { type: String, required: true },

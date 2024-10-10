@@ -19,34 +19,37 @@ const getAllUser = async (req, res) => {
 };
 
 const registerUser = async (req, res) => {
-  const { username, email, password, post, role, policeStationId, contact } = req.body;
-
-  const isCreatedUser = await User.findOne({
-    $or: [{ username }, { email }],
-  });
+  const { username, email, password, post, policeStationId, contact } = req.body;
+  console.log(username);
+  console.log(email);
+  console.log(password);
+  console.log(post);
+  console.log(policeStationId);
+  console.log(contact);
+  const isCreatedUser = await User.findOne({username:username});
   if (isCreatedUser) {
     throw new Error(409, "User aleardy exists");
   }
 
   if (
-    [username, email, password, post, role, policeStationId, contact].some(
-      (val) => val.trim() === ""
+    [username, email, password, post, policeStationId, contact].some(
+      (val) => val === ""
     )
   ) {
     throw new Error(400, "All fields are required");
   }
   const localPathName = req.file?.path;
-  if (!localPathName) throw new Error(400, "Avatar is required");
-
-  const uploadResult = await uploadCloudinary(localPathName);
+  let uploadResult;
+  if(localPathName){
+    uploadResult = await uploadCloudinary(localPathName);
+  }
 
   const createdUser = await User.create({
     username,
-    avatar: uploadResult.url,
+    avatar: uploadResult?.url || "",
     email,
     password,
     post,
-    role,
     policeStationId,
     contact,
   });
@@ -61,7 +64,7 @@ const registerUser = async (req, res) => {
     .cookie("auth_token", auth_token, {
       httpOnly: true,
       secure: true,
-      maxAge: Process.env.ACCESS_TOKEN_EXPIRY,
+      maxAge: process.env.ACCESS_TOKEN_EXPIRY,
     })
     .status(201)
     .json({

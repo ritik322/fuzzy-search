@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-// import * as XLSX from "xlsx";
+import * as XLSX from "xlsx";
 import "./ImportPage.css";
 // import { baseURL } from "../baseURL";
 // import { AiOutlineCloud } from "react-icons/ai";
@@ -48,7 +48,7 @@ const ImportPage = () => {
       const formData = new FormData();
       formData.append("file", file);
 
-      fetch(baseURL + "/upload-data", {
+      fetch("http://localhost:3000/api/v1/criminal/add-multiple-criminals", {
         method: "POST",
         body: formData,
         headers: {
@@ -57,14 +57,13 @@ const ImportPage = () => {
         credentials: "include",
       })
         .then((response) => {
-          if (!response.ok) {
+          if (!response.ok) { 
             throw new Error(`HTTP status ${response.status}`);
           }
           return response.json();
         })
         .then((result) => {
           setUploadStatus("Data successfully uploaded!");
-          window.location.href = "/table";
           setUploading(false);
         })
         .catch((error) => {

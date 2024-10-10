@@ -1,5 +1,14 @@
 import { Criminal } from "../Models/criminal.model.js";
 import uploadCloudinary from "../Utils/cloudinary.js";
+import multer from "multer"
+import csvParser from "csv-parser"
+import xlsx from "xlsx" // For Excel files
+import fs from "fs"
+import { Parser as json2csv } from 'json2csv'; 
+import path from "path";
+
+// Multer setup for file upload
+const upload = multer({ dest: 'uploads/' });
 
 const getCriminal = async(req, res) => {
   const {id} = req.params;
@@ -153,7 +162,6 @@ const deleteCriminals = async(req, res) => {
       res.status(500).json({ message: "Server error", error });
   }
 }; 
-
 // CSV Parser (Alternatively, handle Excel with xlsx)
 const parseCSV = async (filePath) => {
   const criminals = [];
@@ -161,7 +169,14 @@ const parseCSV = async (filePath) => {
     fs.createReadStream(filePath)
       .pipe(csvParser())
       .on('data', (row) => {
-        criminals.push(row); // Assuming the CSV columns match the schema
+        // Normalize keys
+        const normalizedRow = {};
+        for (const key in row) {
+          // Trim whitespace and convert to lowercase
+          const trimmedKey = key.trim(); // Convert to lowercase for consistency
+          normalizedRow[trimmedKey] = row[key]; // Assign value to normalized key
+        }
+        criminals.push(normalizedRow); // Add normalized row to criminals array
       })
       .on('end', () => resolve(criminals))
       .on('error', reject);
@@ -177,23 +192,33 @@ const addMultipleCriminals = async (req, res) => {
 
   // Parse the uploaded file based on its type (CSV or Excel)
   if (file.mimetype === 'text/csv') {
+    console.log("Condition 1")
     criminalsData = await parseCSV(file.path);
   } else if (
     file.mimetype ===
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
   ) {
+    console.log("Condition 2")
     const workbook = xlsx.readFile(file.path);
     const sheet_name_list = workbook.SheetNames;
     criminalsData = xlsx.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
   } else {
     throw new Error(400, 'Unsupported file format');
   }
+  
+  console.log(criminalsData);
 
   // Loop over each entry and add criminal
   const addedCriminals = [];
   for (const data of criminalsData) {
-    const { name, photo, inCustody, age, description, gender, location, crime } = data;
-
+    console.log("data is: ", data);
+    
+    // Normalize the keys if necessary
+    const { name, age, description, gender, location, crime } = data;
+    const inCustody = data.inCustody.trim();
+    // Log the values
+    console.log(name, ", ", inCustody, ", ", age, ", ", description, ", ", gender, ", ", location, ", ", crime);
+    
     // Check for existing criminal
     const isCreatedCriminal = await Criminal.findOne({
       $and: [{ name }, { gender }, { age }, { location }],
@@ -204,13 +229,14 @@ const addMultipleCriminals = async (req, res) => {
       continue;
     }
 
-    if ([name, inCustody, description, gender, location, crime].some(val => !val || val.trim() === "")) {
+    if ([name, inCustody, description, gender, location, crime].some(val => !val || val === "")) {
       console.log(`Invalid data for ${name}. Skipping...`);
       continue;
     }
 
     // If photo is provided, upload it to Cloudinary
     let uploadResult = null;
+    const photo = req.file?.path;
     if (photo) {
       uploadResult = await uploadCloudinary(photo); // Assume `photo` is a local path
     }
@@ -237,7 +263,6 @@ const addMultipleCriminals = async (req, res) => {
   });
 
   // Cleanup uploaded file after processing
-  fs.unlinkSync(file.path);
 };
 
 // Route to export data
@@ -279,7 +304,7 @@ const exportCriminalData = async (req, res) => {
       const workbook = xlsx.utils.book_new();
       xlsx.utils.book_append_sheet(workbook, worksheet, 'Criminals');
 
-      const filePath = path.join(__dirname, 'exports', 'criminals.xlsx');
+      const filePath = path.join(process.cwd(), 'exports', 'criminals.xlsx'); // Use process.cwd() for absolute path
       xlsx.writeFile(workbook, filePath);
 
       res.download(filePath, 'criminals.xlsx', (err) => {

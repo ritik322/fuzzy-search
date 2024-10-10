@@ -7,6 +7,7 @@ import {
 import { Delete as DeleteIcon, Add as AddIcon, Search as SearchIcon } from '@mui/icons-material';
 import axios from "axios";
 import Fuse from "fuse.js";
+import CriminalDetailsDialog from '../CriminalDetailsDialog';
 
 import './CriminalTable.css';
 const UserTable = () => {
@@ -299,6 +300,7 @@ const UserTable = () => {
                   <IconButton color="error" onClick={() => handleDeleteClick(user)}>
                     <DeleteIcon />
                   </IconButton>
+                  <CriminalDetailsDialog criminal={user}/>
                 </TableCell>
               </TableRow>
             ))}
@@ -432,7 +434,6 @@ const UserTable = () => {
           ></span>
           "Female"
         </MenuItem>
-      
     </Select>
               </div>
               <div className="edit-label-input-group">

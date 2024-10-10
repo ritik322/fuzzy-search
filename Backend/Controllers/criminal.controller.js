@@ -29,8 +29,8 @@ const getAllCriminals = async(req, res) => {
 
 const addCriminal = async (req, res) => {
   try {
-    const { name, inCustody, age, description, gender, location, crime } = req.body;
-  
+    const { name, inCustody, age, description, gender, location } = req.body;
+    console.log("name: ", name, ", inCustody: ", inCustody, ", age: ", age, ", description: ", description, ", gender: ", gender, "location: ", location);
     const isCreatedCriminal = await Criminal.findOne({
       $and: [{ name }, { gender }, {age}, {location}],
     });
@@ -39,26 +39,27 @@ const addCriminal = async (req, res) => {
     }
   
     if (
-      [name, inCustody, description, gender, location, crime].some(
+      [name, inCustody, description, gender, location].some(
         (val) => val === ""
       )
     ) {
       throw new Error(400, "All fields are Required");
     }
     const localPathName = req.file?.path;
-    if (!localPathName) throw new Error(400, "Photo is required");
-  
-    const uploadResult = await uploadCloudinary(localPathName);
+    
+    let uploadResult;
+    if(localPathName){
+      uploadResult = await uploadCloudinary(localPathName);
+    }
   
     const createdCriminal = await Criminal.create({
       name,
-      photo: uploadResult.url,
+      photo: uploadResult?.url || "",
       inCustody,
       age,
       description,
       gender,
       location,
-      crime,
     });
   
     const criminalCreated = await Criminal.findOne({ _id: createdCriminal._id });

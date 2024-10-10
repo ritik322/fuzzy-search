@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import CriminalInfoContainer from "../components/criminalInfoContainer";
-
+import CriminalTable from '../components/CriminalTable/CriminalTable.jsx'
 
 const Home = () => {
   const [input, setInput] = useState("");
@@ -102,6 +102,7 @@ const Home = () => {
       </form>
     </div>
     <div><CriminalInfoContainer/></div>
+    <CriminalTable/>
     </>
   );
 };

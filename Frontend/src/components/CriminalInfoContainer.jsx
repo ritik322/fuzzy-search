@@ -34,8 +34,8 @@ const CriminalInfoContainer = () => {
       <div>
         <h1 className="font-bold text-2xl text-center">Criminal Records</h1>
       </div>
-      <div className="flex">
-        <div className="filter-section bg-inherit flex flex-col gap-6">
+      <div className="flex p-4 gap-8 justify-center ">
+        <div className="filter-section bg-inherit flex flex-col gap-6 p-6">
           <div className="filter-category  flex flex-col gap-3">
             <h5>
               Crime Type{" "}
@@ -144,7 +144,7 @@ const CriminalInfoContainer = () => {
             </div>
           </div>
         </div>
-        <div><CriminalTable/></div>  
+        <div className="grow"><CriminalTable/></div>  
       </div>
     </div>
   );

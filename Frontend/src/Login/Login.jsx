@@ -48,7 +48,7 @@ const Login = () => {
   };
 
   return (
-    <div className="login-container max-h-[805px]">
+    <div className="login-container max-h-[805px] section-container">
       <div className="login-box">
         <h2>Login</h2>
         {error && <p className="error-message">{error}</p>}

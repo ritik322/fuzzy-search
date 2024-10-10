@@ -1,5 +1,5 @@
 import axios from "axios";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Link,
   NavLink,
@@ -10,8 +10,12 @@ import {
 import { toast } from "react-toastify";
 
 const Header = ({ isLogin, setIsLogin }) => {
+  const [loggedUserData, setLoggedUserData] = useState(null);
+
   const location = useLocation();
-  const data = location.state?.userData;
+  useEffect(()=>{
+    setLoggedUserData(location.state?.userData)
+  },[])
   const navigate = useNavigate();
   const handleLogout = async (e) => {
     const data = await axios
@@ -19,13 +23,14 @@ const Header = ({ isLogin, setIsLogin }) => {
         withCredentials: true,
       })
       .then((res) => res.data);
-    console.log(data);
     if (data.success) {
       toast.success("Logout Successfully");
-      setIsLogin(!isLogin);
+      localStorage.setItem("isLogin", false);
+      setIsLogin(false);
       navigate("/");
     }
   };
+
 
   return (
     <div className="flex w-full justify-between py-6 bg-zinc-900 text-white items-center section-container ">
@@ -81,11 +86,11 @@ const Header = ({ isLogin, setIsLogin }) => {
           {isLogin ? (
             <>
               <img
-                src="https://img.icons8.com/ios-filled/50/ffffff/user-male-circle.png"
-                className="w-8"
+                src={loggedUserData?.avatar}
+                className="w-8 rounded-full"
                 alt=""
               />
-              <p>{data?.username}</p>{" "}
+              <p>{loggedUserData?.username}</p>{" "}
             </>
           ) : (
             ""

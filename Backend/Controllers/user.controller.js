@@ -21,17 +21,12 @@ const getAllUser = async (req, res) => {
 };
 
 const registerUser = async (req, res) => {
-  const { username, email, password, post, policeStationId, contact } =
+  try {
+    const { username, email, password, post, policeStationId, contact } =
     req.body;
-  console.log(username);
-  console.log(email);
-  console.log(password);
-  console.log(post);
-  console.log(policeStationId);
-  console.log(contact);
   const isCreatedUser = await User.findOne({ username: username });
   if (isCreatedUser) {
-    throw new Error(409, "User aleardy exists");
+    throw new Error("User aleardy exists");
   }
 
   if (
@@ -39,7 +34,7 @@ const registerUser = async (req, res) => {
       (val) => val === ""
     )
   ) {
-    throw new Error(400, "All fields are required");
+    throw new Error("All fields are required");
   }
   const localPathName = req.file?.path;
   let uploadResult;
@@ -61,7 +56,7 @@ const registerUser = async (req, res) => {
     "-password"
   );
   if (!userCreated)
-    throw new Error(500, "Something went wrong while registering ");
+    throw new Error("Something went wrong while registering ");
   const auth_token = userCreated.generateAccessToken();
   res
     .cookie("auth_token", auth_token, {
@@ -76,10 +71,16 @@ const registerUser = async (req, res) => {
       isLogin: true,
       data: userCreated,
     });
+  } catch (error) {
+    console.log(error)
+    res.status(400).json({message: "Error while Registering"})
+  }
+  
 };
 
 const loginUser = async (req, res) => {
   try {
+    
     const { username, password } = req.body;
 
     if (!username) {

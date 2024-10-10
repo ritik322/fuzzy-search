@@ -41,7 +41,6 @@ const UserTable = () => {
       const response = await axios.get("http://localhost:3000/api/v1/user/allUsers", {
         withCredentials: true,
       });
-      console.log("response is: ", response.data.data);
 
       setUsers(response.data.data);
       
@@ -62,7 +61,7 @@ const UserTable = () => {
     const performSearch = () => {
       if (searchTerm) {
         const fuse = new Fuse(users, {
-          keys: ["name", "email", "post", "policeStationId", "contact"],
+          keys: ["name", "email", "post", "policeStationId", "contact","avatar"],
           includeScore: true,
           threshold: 0.5,
         });
@@ -174,6 +173,12 @@ const UserTable = () => {
     else {
       setEditData((prevData) => ({ ...prevData, [name]: value }));
      }
+     if (name === 'avatar') {
+      const file = event.target.files[0]; // Capture the actual File object
+      setEditData((prevState) => ({ ...prevState, [name]: file }));
+    } else {
+      setEditData((prevState) => ({ ...prevState, [name]: value }));
+    }
   };
 
   const handleBlur = (event) => {
@@ -189,8 +194,8 @@ const UserTable = () => {
       showNoValidPhone(!isValid);
     }
   };
+  const handleSaveChanges = async (e) => {
 
-  const handleSaveChanges = async () => {
     if(!editData) return;
     if(updatingDetails){
       return;
@@ -219,7 +224,21 @@ const UserTable = () => {
     try {
       let response;
       // Update HR or Company depending on the modal type
-      response = await axios.post('http://localhost:3000/api/v1/user/register-user', editData, {
+      // Create a FormData object
+      const formData = new FormData();
+      
+      // Append all fields to the FormData object, including the file (avatar)
+      for (const key in editData) {
+        formData.append(key, editData[key]);
+      }
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+      }
+      
+      response = await axios.post('http://localhost:3000/api/v1/user/register-user', formData,{
+        headers: {
+          'Content-Type': 'multipart/form-data', // Set the content type to `multipart/form-data`
+        }, 
         withCredentials: true,
       });
       // Handle successful response
@@ -434,7 +453,6 @@ const UserTable = () => {
                 <label className="edit-label">Photo</label>
                 <input
                   name="avatar"
-                  value={editData.avatar || ""}
                   type='file'
                   onChange={handleEditChange}
                   fullWidth

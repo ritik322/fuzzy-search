@@ -33,8 +33,10 @@ const Login = () => {
           { withCredentials: true }
         )
         .then((res) => res.data).catch(err => err)
+      console.log(res);
       if (res.isLogin) {
         toast.success("Logged in successfully!");
+        localStorage.setItem("isLogin",true)
         setIsLogin(true);
         navigate("/home",{state: {userData: res.data}});
       } else {

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Form, Button } from "react-bootstrap";
+import CriminalTable from './CriminalTable/CriminalTable';
 
 const CriminalInfoContainer = () => {
   const [crimeTypes, setCrimeTypes] = useState({
@@ -143,7 +144,7 @@ const CriminalInfoContainer = () => {
             </div>
           </div>
         </div>
-        {/* <div></div>  for criminal table */}
+        <div><CriminalTable/></div>  
       </div>
     </div>
   );

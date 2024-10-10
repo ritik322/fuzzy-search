@@ -1,12 +1,22 @@
 import React, { useState, useRef, useEffect } from "react";
 import * as XLSX from "xlsx";
 import "./ImportPage.css";
+import { useNavigate, useOutletContext } from "react-router-dom";
 // import { baseURL } from "../baseURL";
 // import { AiOutlineCloud } from "react-icons/ai";
 // import { CircularProgress } from "@mui/material";
 
 const ImportPage = () => {
-    console.log("on Import Page")
+  const navigate = useNavigate();
+
+  const [isLogin, setIsLogin] = useOutletContext();
+  useEffect(() => {
+    if (!isLogin) {
+      navigate("/");
+    }
+  },[]);
+
+
   const [file, setFile] = useState(null); // Store the selected file
   const [uploadStatus, setUploadStatus] = useState("");
   const [showImportButton, setShowImportButton] = useState(true);

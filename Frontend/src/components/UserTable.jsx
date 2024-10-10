@@ -7,7 +7,18 @@ import {
 import { Delete as DeleteIcon, Add as AddIcon, Search as SearchIcon } from '@mui/icons-material';
 import axios from "axios";
 import './UserTable.css';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 const UserTable = () => {
+  const navigate = useNavigate();
+
+  const [isLogin, setIsLogin] = useOutletContext();
+  useEffect(() => {
+    if (!isLogin) {
+      navigate("/");
+    }
+  },[]);
+
+
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUsers, setSelectedUsers] = useState([]);

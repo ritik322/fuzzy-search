@@ -12,6 +12,9 @@ const logSchema = new mongoose.Schema({
   details: {
     type: String, // Additional details about the changes made
   },
+  iv: {
+    type: String,
+  },
   timestamp: {
     type: Date,
     default: Date.now, // Automatically add the current timestamp

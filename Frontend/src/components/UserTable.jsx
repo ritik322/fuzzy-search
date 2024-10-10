@@ -7,6 +7,7 @@ import {
 import { Delete as DeleteIcon, Add as AddIcon, Search as SearchIcon } from '@mui/icons-material';
 import axios from "axios";
 import './UserTable.css';
+import Fuse from "fuse.js";
 import { useNavigate, useOutletContext } from 'react-router-dom';
 const UserTable = () => {
   const navigate = useNavigate();

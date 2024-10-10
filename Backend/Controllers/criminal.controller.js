@@ -8,6 +8,53 @@ import { Parser as json2csv } from 'json2csv';
 import path from "path";
 import { spawn } from 'child_process';
 import { Log } from "../Models/log.model.js";
+import crypto from "crypto";
+
+// Use a fixed key for encryption/decryption (keep it secret)
+const key = crypto.scryptSync("your-password", "salt", 32); // Use a secure password and salt
+const algorithm = 'aes-256-cbc';
+
+// Encrypt function that returns both the encrypted text and the iv used
+function encrypt(text) {
+    const iv = crypto.randomBytes(16); // Generate a new IV for each encryption
+    const cipher = crypto.createCipheriv(algorithm, key, iv);
+    let encrypted = cipher.update(text, 'utf-8', 'hex');
+    encrypted += cipher.final('hex');
+    return { encryptedData: encrypted, iv: iv.toString('hex') };
+}
+
+function decrypt(encryptedText, iv) {
+    if (!iv) {
+        throw new Error("Missing IV for decryption");
+    }
+    
+    const decipher = crypto.createDecipheriv(algorithm, key, Buffer.from(iv, 'hex'));
+    let decrypted = decipher.update(encryptedText, 'hex', 'utf-8');
+    decrypted += decipher.final('utf-8');
+    return decrypted;
+}
+
+const getAllLogs = async (req, res) => {
+  try {
+      const logs = await Log.find().sort({ timestamp: -1 });
+      
+      // Decrypt the 'details' field for each log
+      const decryptedLogs = logs.map(log => {
+          try {
+              const decryptedDetails = decrypt(log.details, log.iv); // Pass both encrypted text and iv
+              return { ...log._doc, details: decryptedDetails }; // Spread the rest of the log data
+          } catch (error) {
+              console.error("Error decrypting log details:", error.message);
+              return { ...log._doc, details: "Error decrypting details" };
+          }
+      });
+
+      res.status(200).json(decryptedLogs);
+  } catch (error) {
+      res.status(500).json({ message: "Error fetching logs: " + error });
+  }
+};
+
 
 // Multer setup for file upload
 const upload = multer({ dest: 'uploads/' });
@@ -24,6 +71,16 @@ const getAllCriminals = async (req, res) => {
   try {
     // Fetch only criminals with reviewStatus as "cleared"
     const criminals = await Criminal.find({ reviewStatus: "cleared" });
+    return res.json(criminals);
+  } catch (error) {
+    return res.status(500).json({ message: "Error: " + error.toString() });
+  }
+};
+
+const getAllReviewingCriminals = async (req, res) => {
+  try {
+    // Fetch only criminals with reviewStatus as "cleared"
+    const criminals = await Criminal.find({ reviewStatus: "under review" });
     return res.json(criminals);
   } catch (error) {
     return res.status(500).json({ message: "Error: " + error.toString() });
@@ -63,11 +120,12 @@ const addCriminal = async (req, res) => {
       gender,
       location,
     });
-
+    const encryptedString = encrypt(`Criminal ${createdCriminal.name} was created.`)
     await Log.create({
       action: "create",
       criminalId: createdCriminal._id,
-      details: `Criminal ${createdCriminal.name} was created.`,
+      details: encryptedString.encryptedData,
+      iv: encryptedString.iv,
     });
   
     const criminalCreated = await Criminal.findOne({ _id: createdCriminal._id });
@@ -111,11 +169,12 @@ const updateCriminal = async (req, res) => {
     if (!updatedCriminal) {
       return res.status(404).json({ message: "Criminal not found" });
     }
-
+    const encryptedString = encrypt(`Criminal ${updatedCriminal.name} was updated.`);
     await Log.create({
       action: "update",
       criminalId: updatedCriminal._id,
-      details: `Criminal ${updatedCriminal.name} was updated.`,
+      details: encryptedString.encryptedData,
+      iv: encryptedString.iv
     });
 
     // Respond with the updated user data
@@ -130,6 +189,46 @@ const updateCriminal = async (req, res) => {
   }
 };
 
+const updateReviewStatusToCleared = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find the criminal record by ID and update the reviewStatus to "cleared"
+    const updatedCriminal = await Criminal.findByIdAndUpdate(
+      { _id: id },
+      { reviewStatus: "cleared" }, // Set reviewStatus to "cleared"
+      {
+        new: true, // Return the updated document
+        runValidators: true, // Run schema validators
+      }
+    );
+
+    if (!updatedCriminal) {
+      return res.status(404).json({ message: "Criminal not found" });
+    }
+
+    const encryptedString = encrypt(`Criminal ${updatedCriminal.name}'s review status was updated to "cleared".`)
+    // Optionally, log the action
+    await Log.create({
+      action: "update",
+      criminalId: updatedCriminal._id,
+      details: encryptedString.encryptedData,
+      iv: encryptedString.iv
+    });
+
+    // Respond with the updated data
+    res.status(200).json({
+      message: "Criminal review status updated to 'cleared' successfully",
+      updated: true,
+      criminal: updatedCriminal,
+    });
+  } catch (error) {
+    console.error("Error updating review status:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+
 const deleteCriminal = async (req, res) => {
   try {
     const { id } = req.params;
@@ -140,10 +239,12 @@ const deleteCriminal = async (req, res) => {
       return res.status(404).json({ message: "Criminal not found" });
     }
 
+    const encryptedString = encrypt(`Criminal ${deletingCriminal.name} was deleted.`);
     await Log.create({
       action: "delete",
       criminalId: deletingCriminal._id,
-      details: `Criminal ${deletingCriminal.name} was deleted.`,
+      details: encryptedString.encryptedData,
+      iv: encryptedString.iv
     });
 
     res
@@ -173,10 +274,12 @@ const deleteCriminals = async(req, res) => {
       }
       const criminalsToDelete = await Criminal.find({ _id: { $in: ids } });
       for(deletingCriminal in criminalsToDelete){
+        const encryptedString = encrypt(`Criminal ${deletingCriminal.name} was deleted.`)
         await Log.create({
           action: "delete",
           criminalId: deletingCriminal._id,
-          details: `Criminal ${deletingCriminal.name} was deleted.`,
+          details: encryptedString.encryptedData,
+          iv: encryptedString.iv
         });
       }
 
@@ -329,10 +432,12 @@ const addMultipleCriminals = async (req, res) => {
       matchedRecord: (similar_record ? similar_record._id : null)
     });
 
+    const encryptedString = encrypt(`Criminal ${createdCriminal.name} was created via bulk upload.`)
     await Log.create({
       action: "create",
       criminalId: createdCriminal._id,
-      details: `Criminal ${createdCriminal.name} was created via bulk upload.`,
+      details: encryptedString.encryptedData,
+      iv: encryptedString.iv
     });
 
     addedCriminals.push(createdCriminal);
@@ -402,14 +507,5 @@ const exportCriminalData = async (req, res) => {
   }
 };
 
-const getAllLogs = async (req, res) => {
-  try {
-    const logs = await Log.find().populate('criminalId').sort({ timestamp: -1 });
-    res.status(200).json(logs);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching logs: " + error });
-  }
-};
 
-
-export { getAllLogs, exportCriminalData, addMultipleCriminals, updateCriminal, addCriminal, deleteCriminal, deleteCriminals, getCriminal, getAllCriminals };
+export {updateReviewStatusToCleared, getAllLogs, exportCriminalData, addMultipleCriminals, updateCriminal, addCriminal, deleteCriminal, deleteCriminals, getCriminal, getAllCriminals, getAllReviewingCriminals };

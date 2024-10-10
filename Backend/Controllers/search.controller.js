@@ -13,7 +13,7 @@ const criminals = [
 
 const search = async (req, res) => {
   const { name } = req.body;
-  
+   
   // For each criminal in the database, call the Python script and process the result
   const pythonProcess = spawn('python', ['./scripts/script.py', name, JSON.stringify(criminals)]);
 

@@ -5,6 +5,7 @@ import "./index.css"
 import {
   createBrowserRouter,
   RouterProvider,
+  Navigate
 } from "react-router-dom";
 import UserTable from './components/UserTable.jsx';
 import Login from './Login/Login.jsx';
@@ -18,6 +19,11 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/",
+        element: < Navigate to="/login" />
+
+      },
+      {
+        path: "/home",
         element: <Home />
 
       },

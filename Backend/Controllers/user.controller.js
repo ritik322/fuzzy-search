@@ -15,20 +15,18 @@ const getAllUser = async (req, res) => {
   if (!users)
     res.status(400).json({ message: "no user exist", success: false });
 
-  res.status(200).json({ message: "all users retrieved", success: true, data: users });
+  res
+    .status(200)
+    .json({ message: "all users retrieved", success: true, data: users });
 };
 
 const registerUser = async (req, res) => {
-  const { username, email, password, post, policeStationId, contact } = req.body;
-  console.log(username);
-  console.log(email);
-  console.log(password);
-  console.log(post);
-  console.log(policeStationId);
-  console.log(contact);
-  const isCreatedUser = await User.findOne({username:username});
+  try {
+    const { username, email, password, post, policeStationId, contact } =
+    req.body;
+  const isCreatedUser = await User.findOne({ username: username });
   if (isCreatedUser) {
-    throw new Error(409, "User aleardy exists");
+    throw new Error("User aleardy exists");
   }
 
   if (
@@ -36,11 +34,11 @@ const registerUser = async (req, res) => {
       (val) => val === ""
     )
   ) {
-    throw new Error(400, "All fields are required");
+    throw new Error("All fields are required");
   }
   const localPathName = req.file?.path;
   let uploadResult;
-  if(localPathName){
+  if (localPathName) {
     uploadResult = await uploadCloudinary(localPathName);
   }
 
@@ -58,7 +56,7 @@ const registerUser = async (req, res) => {
     "-password"
   );
   if (!userCreated)
-    throw new Error(500, "Something went wrong while registering ");
+    throw new Error("Something went wrong while registering ");
   const auth_token = userCreated.generateAccessToken();
   res
     .cookie("auth_token", auth_token, {
@@ -73,48 +71,58 @@ const registerUser = async (req, res) => {
       isLogin: true,
       data: userCreated,
     });
+  } catch (error) {
+    console.log(error)
+    res.status(400).json({message: "Error while Registering"})
+  }
+  
 };
 
 const loginUser = async (req, res) => {
-  const { username, email, password } = req.body;
+  try {
+    
+    const { username, password } = req.body;
 
-  if (!username && !email) {
-    throw new Error(400, "username or email is needed");
-  }
-  if (!password) {
-    throw new Error(400, "password is required");
-  }
+    if (!username) {
+      throw new Error("username or email is needed");
+    }
+    if (!password) {
+      throw new Error("password is required");
+    }
 
-  const user = await User.findOne({
-    $or: [{ username }, { email }],
-  });
-  if (!user) {
-    throw new Error(404, "User not found!");
-  }
-
-  const isPasswordCorrect = await user.isPasswordCorrect(password);
-
-  if (!isPasswordCorrect) {
-    throw new Error(401, "Incorrect user credentials");
-  }
-
-  const loggedInUser = await User.findOne({ _id: user._id }).select(
-    "-password "
-  );
-  const auth_token = loggedInUser.generateAccessToken();
-  res
-    .status(200)
-    .cookie("auth_token", auth_token, {
-      httpOnly: true,
-      secure: true,
-      maxAge: process.env.ACCESS_TOKEN_EXPIRY,
-    })
-    .json({
-      statusCode: 200,
-      message: "user logged in",
-      isLogin: true,
-      data: loggedInUser,
+    const user = await User.findOne({
+      $or: [{ username }],
     });
+    if (!user) {
+      throw new Error("User not found!");
+    }
+
+    const isPasswordCorrect = await user.isPasswordCorrect(password);
+
+    if (!isPasswordCorrect) {
+      throw new Error("Incorrect user credentials");
+    }
+
+    const loggedInUser = await User.findOne({ _id: user._id }).select(
+      "-password "
+    );
+    const auth_token = loggedInUser.generateAccessToken();
+    res
+      .status(200)
+      .cookie("auth_token", auth_token, {
+        httpOnly: true,
+        maxAge: process.env.ACCESS_TOKEN_EXPIRY,
+      })
+      .json({
+        statusCode: 200,
+        message: "user logged in",
+        isLogin: true,
+        data: loggedInUser,
+      });
+  } catch (error) {
+    console.log(error)
+    res.status(400).json({message: error.message})
+  }
 };
 
 const updateUser = async (req, res) => {
@@ -158,7 +166,7 @@ const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const deletedUser = await User.findByIdAndDelete({_id: id});
+    const deletedUser = await User.findByIdAndDelete({ _id: id });
 
     if (!deletedUser) {
       return res.status(404).json({ message: "User not found" });
@@ -175,7 +183,7 @@ const deleteUser = async (req, res) => {
   }
 };
 
-const logoutUser = async (req,res) => {
+const logoutUser = async (req, res) => {
   const { auth_token } = req.cookies;
 
   await User.findOneAndUpdate(
@@ -187,7 +195,15 @@ const logoutUser = async (req,res) => {
   res
     .status(200)
     .clearCookie("auth_token", { httpOnly: true, secure: true })
-    .json({message: "Logout successfull", success: true});
-}
+    .json({ message: "Logout successfull", success: true });
+};
 
-export { registerUser, loginUser, updateUser, deleteUser, getUser, getAllUser, logoutUser };
+export {
+  registerUser,
+  loginUser,
+  updateUser,
+  deleteUser,
+  getUser,
+  getAllUser,
+  logoutUser,
+};

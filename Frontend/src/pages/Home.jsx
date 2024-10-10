@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import CriminalInfoContainer from "../components/criminalInfoContainer";
 import { useNavigate, useOutletContext } from "react-router-dom";
-import CriminalTable from '../components/CriminalTable/CriminalTable.jsx'
+import CriminalTable from "../components/CriminalTable/CriminalTable.jsx";
+import axios from "axios";
+import { Backdrop, CircularProgress } from "@mui/material";
 
 const Home = () => {
   const [input, setInput] = useState("");
@@ -9,14 +11,19 @@ const Home = () => {
   const [language, setLanguage] = useState("en-US");
   const recognitionRef = useRef(null);
   const navigate = useNavigate();
-
+  const [tableData, setTableData] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [isLogin, setIsLogin] = useOutletContext();
   useEffect(() => {
     if (!isLogin) {
       navigate("/");
     }
-  },[]);
-
+  }, []);
+  useEffect(()=>{
+    if(!input.length){
+      setTableData(null)
+    }
+  },[input])
   useEffect(() => {
     // Check if the browser supports the Web Speech API
     if (!("webkitSpeechRecognition" in window)) {
@@ -49,7 +56,7 @@ const Home = () => {
     }
   }, [language]);
 
-  const toggleListening = (e) => {
+  const toggleListening = (event) => {
     event.preventDefault();
     if (isListening) {
       recognitionRef.current.stop();
@@ -60,6 +67,23 @@ const Home = () => {
     setIsListening(!isListening);
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    const res = await axios
+      .post(
+        "http://localhost:3000/api/v1/search",
+        { name: input },
+        { withCredentials: true }
+      )
+      .then((res) => res.data)
+      .catch((e) => e);
+  
+    const transformedData = res.map((item) => item.criminal_data);
+    setTableData(transformedData);
+    setLoading(false);
+  };
+
   return (
     <>
       <div className=" py-10 text-white section-container flex gap-6 flex-col items-center">
@@ -67,9 +91,7 @@ const Home = () => {
           action=""
           method="post"
           className="min-[870px]:w-[80%] bg-white text-black flex justify-between items-center px-4 py-2 rounded-full"
-          onSubmit={(e) => {
-            e.preventDefault();
-          }}
+          onSubmit={handleSubmit}
         >
           <div className="flex gap-8 min-[660px]:grow">
             <select
@@ -104,13 +126,19 @@ const Home = () => {
               type="submit"
               className="bg-blue-600 px-1 py-3 min-[660px]:px-6 text-white rounded-full"
             >
-              Search
+              {loading ? "Searching..." : "Search"}
             </button>
           </div>
         </form>
+        <Backdrop
+          sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+          open={loading}
+        >
+          <CircularProgress color="inherit" />
+        </Backdrop>
       </div>
       <div>
-        <CriminalInfoContainer />
+        <CriminalInfoContainer tableData={tableData} />
       </div>
     </>
   );

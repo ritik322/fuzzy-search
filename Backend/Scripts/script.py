@@ -97,7 +97,6 @@ if __name__ == "__main__":
         criminal["score"] = score
         # Prepare the output data
         result = {
-            "english_input_name": translated_input_name,
             "criminal_data": criminal  # Include all other data associated with the criminal
         }
         results.append(result)

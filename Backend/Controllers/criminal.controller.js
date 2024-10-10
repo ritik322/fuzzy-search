@@ -89,7 +89,8 @@ const getAllReviewingCriminals = async (req, res) => {
 
 const addCriminal = async (req, res) => {
   try {
-    const { name, inCustody, age, description, gender, location } = req.body;
+    const { name, inCustody, age, description, gender, location,crime } = req.body;
+    console.log(crime)
     const isCreatedCriminal = await Criminal.findOne({
       $and: [{ name }, { gender }, {age}, {location}],
     });
@@ -116,6 +117,7 @@ const addCriminal = async (req, res) => {
       photo: uploadResult?.url || "",
       inCustody,
       age,
+      crime,
       description,
       gender,
       location,
@@ -130,12 +132,13 @@ const addCriminal = async (req, res) => {
   
     const criminalCreated = await Criminal.findOne({ _id: createdCriminal._id });
     if (!criminalCreated)
-      throw new Error(500, "Something went wrong while creating Criminal");
+      throw new Error("Something went wrong while creating Criminal");
     res
       .status(201)
       .json({
         statusCode: 201,
         message: "Criminal created successfully",
+        success: true,
         data: criminalCreated,
       });
   } catch (error) {

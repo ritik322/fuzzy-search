@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
 import {
   Table,
   TableBody,
@@ -34,7 +35,8 @@ import Fuse from "fuse.js";
 import CriminalDetailsDialog from '../CriminalDetailsDialog';
 
 import "./CriminalTable.css";
-const UserTable = () => {
+
+const UserTable = ({tableData}) => {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUsers, setSelectedUsers] = useState([]);
@@ -59,11 +61,10 @@ const UserTable = () => {
         {
           withCredentials: true,
         }
-      );
-      console.log(response.data);
-
-      setUsers(response.data);
-      setFilteredUsers(response.data);
+      ).then(res => res.data)
+      console.log(response)
+      setUsers(response);
+      setFilteredUsers(response);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -72,57 +73,25 @@ const UserTable = () => {
   };
 
   useEffect(() => {
-    getData();
-  }, []);
+    if(!tableData){
+      getData()
+    }
+    else{
+      setUsers(tableData)
+    }
+  }, [tableData]);
+
+  useEffect(() => {
+    setFilteredUsers(users); // Update filtered users whenever users change
+  }, [users]);
 
   // Search Perform
-  useEffect(() => {
-    const performSearch = () => {
-      if (searchTerm) {
-        const fuse = new Fuse(users, {
-          keys: ["name", "inCustody", "description", "location", "gender"],
-          includeScore: true,
-          threshold: 0.5,
-        });
-
-        let result = fuse.search(searchTerm).map((result) => result.item);
-        setFilteredUsers(result);
-      } else {
-        let result = users;
-        setFilteredUsers(result);
-      }
-      setPage(0); // Reset page when search changes
-    };
-
-    performSearch();
-  }, [searchTerm, users]); // Ensure both searchTerm and data are dependencies
-
-  const handleCheckboxClick = (event, id) => {
-    event.stopPropagation();
-    const selectedIndex = selectedUsers.indexOf(id);
-    let newSelected = [];
-
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selectedUsers, id);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selectedUsers.slice(1));
-    } else if (selectedIndex === selectedUsers.length - 1) {
-      newSelected = newSelected.concat(selectedUsers.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selectedUsers.slice(0, selectedIndex),
-        selectedUsers.slice(selectedIndex + 1)
-      );
-    }
-
-    setSelectedUsers(newSelected);
-  };
+  // Ensure both searchTerm and data are dependencies
 
   // const filteredUsers = users.filter(user => {
   //   return user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
   //     user.email.toLowerCase().includes(searchTerm.toLowerCase());
   // });
-
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -173,6 +142,10 @@ const UserTable = () => {
   const handleEditChange = (event) => {
     const { name, value } = event.target;
 
+    if (name === "gender") {
+      setEditData((prevData) => ({ ...prevData, [name]: value }));
+    }
+
     if (name === "contact") {
       const numericValue = value.replace(/[^0-9]/g, ""); // Only allow numbers
       if (numericValue.length <= 10) {
@@ -180,6 +153,9 @@ const UserTable = () => {
       }
     } else {
       setEditData((prevData) => ({ ...prevData, [name]: value }));
+    }
+    if (name === "crime") {
+      setEditData((prevState) => ({ ...prevState, [name]: value }));
     }
     if (name === "photo") {
       const file = event.target.files[0];
@@ -203,12 +179,29 @@ const UserTable = () => {
     }
   };
 
+  const requiredFields = ["name", "crime", "age", "location", "gender", "photo"];
+  const validateFields = () => {
+    // Check if all required fields are present and not empty in `editData`
+    for (const field of requiredFields) {
+      if (!editData[field] ) {
+        toast.error(`Field "${field}" is required!`);
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleSaveChanges = async () => {
     if (!editData) return;
     if (updatingDetails) {
       return;
     }
+
     setUpdatingDetails(true);
+    if (!validateFields()) {
+      setUpdatingDetails(false);
+      return;
+    }
 
     try {
       // Create a FormData object
@@ -231,15 +224,22 @@ const UserTable = () => {
           },
           withCredentials: true,
         }
-      );
+      ).then(res => res.data)
       // Handle successful response
+      if(response.success){
+        toast.success("Criminal data uploaded successfully!")
+      }
+      else{
+        throw Error("Error while creating!")
+      }
+
       getData(); // Fetch updated data after save
       setOpen(false);
     } catch (err) {
       // Handle backend errors
-      console.log("An error Occurred: ", err);
+      toast.error("An error Occurred: ", err.message);
     } finally {
-      setEditData('')
+      setEditData("");
       setUpdatingDetails(false); // Reset updating state
     }
   };
@@ -265,7 +265,7 @@ const UserTable = () => {
               <TableRow>
                 <TableCell sx={{ fontWeight: "bold" }}>Photo</TableCell>
                 <TableCell sx={{ fontWeight: "bold" }}>Name</TableCell>
-                <TableCell sx={{ fontWeight: "bold" }}>inCustody</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Crime</TableCell>
                 <TableCell sx={{ fontWeight: "bold" }}>Age</TableCell>
                 <TableCell sx={{ fontWeight: "bold" }}>Gender</TableCell>
                 <TableCell sx={{ fontWeight: "bold" }}>Location</TableCell>
@@ -289,7 +289,7 @@ const UserTable = () => {
                       />
                     </TableCell>
                     <TableCell>{user.name}</TableCell>
-                    <TableCell>{user.inCustody ? "Yes" : "No"}</TableCell>
+                    <TableCell>{user.crime.join(", ")}</TableCell>
                     <TableCell>{user.age}</TableCell>
                     <TableCell>{user.gender}</TableCell>
                     <TableCell>{user.location}</TableCell>
@@ -360,6 +360,24 @@ const UserTable = () => {
                     required
                   />
                 </div>
+                <div className="edit-label-input-group">
+                  <label className="edit-label">Crime</label>
+                  <select
+                    name="crime"
+                    value={editData.crime || ""}
+                    onChange={handleEditChange}
+                    fullWidth
+                    margin="normal"
+                    required
+                    className="edit-input"
+                  >
+                    <option value="Homicide">Homicide</option>
+                    <option value="Fraud">Fraud</option>
+                    <option value="Burglary">Burglary</option>
+                    <option value="DrugOffense">Drug Offense</option>
+                    <option value="Assault">Assault</option>
+                  </select>
+                </div>
 
                 <div className="edit-label-input-group">
                   <label className="edit-label">Age</label>
@@ -398,51 +416,20 @@ const UserTable = () => {
                 </div>
                 <div className="edit-label-input-group">
                   <label className="edit-label">Gender</label>
-                  <Select
+                  <select
                     name="gender"
                     value={editData.gender || ""}
                     onChange={handleEditChange}
+                    fullWidth
                     margin="normal"
+                    required
                     className="edit-input"
                   >
-                    <MenuItem
-                      key="Male"
-                      value="Male"
-                      className="status-select-item"
-                    >
-                      {/* Colored dot before the status text */}
-                      <span
-                        style={{
-                          borderRadius: "50%",
-                          border: "0.0px solid black",
-                          display: "inline-block",
-                          width: "9px",
-                          height: "9px",
-                          marginRight: "8px",
-                        }}
-                      ></span>
-                      "Male"
-                    </MenuItem>
-                    <MenuItem
-                      key="Female"
-                      value="Female"
-                      className="status-select-item"
-                    >
-                      {/* Colored dot before the status text */}
-                      <span
-                        style={{
-                          borderRadius: "50%",
-                          border: "0.0px solid black",
-                          display: "inline-block",
-                          width: "9px",
-                          height: "9px",
-                          marginRight: "8px",
-                        }}
-                      ></span>
-                      "Female"
-                    </MenuItem>
-                  </Select>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                  </select>
                 </div>
+
                 <div className="edit-label-input-group">
                   <label className="edit-label">Photo</label>
                   <input

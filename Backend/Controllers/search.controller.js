@@ -6,7 +6,7 @@ const search = async (req, res) => {
   const criminals = await Criminal.find();
   
   // For each criminal in the database, call the Python script and process the result
-  const pythonProcess = spawn('python', ['./scripts/script.py', name, JSON.stringify(criminals)]);
+  const pythonProcess = spawn('python', ['./scripts/script2.py', name, JSON.stringify(criminals)]);
 
     let result = '';
     pythonProcess.stdout.on('data', (data) => {

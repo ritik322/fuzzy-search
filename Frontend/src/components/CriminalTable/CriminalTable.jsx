@@ -85,7 +85,7 @@ const UserTable = ({ tableData }) => {
   };
 
   useEffect(() => {
-    if (!tableData || tableData.length == 0) {
+    if (!tableData) {
       getData();
     } else {
       setUsers(tableData);
@@ -288,16 +288,9 @@ const UserTable = ({ tableData }) => {
           startIcon={<AddIcon />}
           onClick={handleOpen}
         >
-          Add User
+          Add Criminal
         </Button>
       </Box>
-      {selectedCriminal && (
-        <CriminalDetailsDialog
-          criminal={selectedCriminal}
-          open={isDialogOpen}
-          handleClose={handleCloseDialog}
-        />
-      )}
 
       {/* Table */}
       {!loading ? (
@@ -357,8 +350,18 @@ const UserTable = ({ tableData }) => {
                           setUpdatingCriminal(true);
                         }}
                       >
-                        <EditIcon />
+                      <EditIcon />
                       </IconButton>
+                      <IconButton >
+                      {selectedCriminal && (
+                        <CriminalDetailsDialog
+                          criminal={selectedCriminal}
+                          open={isDialogOpen}
+                          handleClose={handleCloseDialog}
+                        />
+                      )}
+                      </IconButton>
+                      
                     </TableCell>
                   </TableRow>
                 ))}

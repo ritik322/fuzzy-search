@@ -22,12 +22,18 @@ const Header = ({ isLogin, setIsLogin }) => {
       .get("http://localhost:3000/api/v1/user/logout", {
         withCredentials: true,
       })
-      .then((res) => res.data);
+      .then((res) => res.data).catch( e => e.response.data)
     if (data.success) {
       toast.success("Logout Successfully");
       localStorage.setItem("isLogin", false);
       setIsLogin(false);
       navigate("/");
+    }
+    else{
+      toast.error("Login first")
+      localStorage.setItem("isLogin",false)
+      setIsLogin(false)
+      navigate("/")
     }
   };
 

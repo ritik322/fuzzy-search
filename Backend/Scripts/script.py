@@ -1,5 +1,6 @@
 import sys
 import json
+import re
 from rapidfuzz import fuzz
 import jellyfish
 from transformers import BertTokenizer, BertModel
@@ -15,6 +16,10 @@ sbert_model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
 test_model = SentenceTransformer('shahrukhx01/paraphrase-mpnet-base-v2-fuzzy-matcher')
 
 translator = Translator()
+
+def is_english(name):
+    """Check if the name contains only English characters."""
+    return bool(re.match(r'^[a-zA-Z\s]+$', name))
 
 def phonetic_similarity(name1, name2):
     soundex1 = jellyfish.soundex(name1)
@@ -71,6 +76,8 @@ def combined_similarity(name1, name2):
 
 def translate_to_english(name):
     """Translate the input name to English."""
+    if is_english(name):
+        return name
     try:
         translated = translator.translate(name, dest='en')
         return translated.text

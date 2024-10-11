@@ -1,5 +1,5 @@
 import express from "express";
-import {getAllReviewingCriminals, addMultipleCriminals, exportCriminalData, updateCriminal, addCriminal, deleteCriminal, deleteCriminals, getCriminal, getAllCriminals, getAllLogs, updateReviewStatusToCleared} from "../Controllers/criminal.controller.js";
+import {getAllReviewingCriminals, addMultipleCriminals, exportCriminalData, updateCriminal, addCriminal, deleteCriminal, deleteCriminals, getCriminal, getAllCriminals, getAllLogs, updateReviewStatusToCleared, getCountsByAction, getCrimesByLocation, getUpdateLogs, getLatestActivityFeed} from "../Controllers/criminal.controller.js";
 import { upload } from "../Middlewares/multer.middleware.js";
 import { authenticateUser } from "../Middlewares/auth.middleware.js";
 import multer from "multer";
@@ -19,4 +19,8 @@ criminalRouter.route('/export-criminals').get(exportCriminalData);
 criminalRouter.route('/get-all-logs').get(getAllLogs);
 criminalRouter.route('/get-review-criminals').get(getAllReviewingCriminals);
 criminalRouter.route('/update-status').put(updateReviewStatusToCleared);
+criminalRouter.route('/counts-by-action').get(getCountsByAction);
+criminalRouter.route('/counts-by-location').get(getCrimesByLocation);
+criminalRouter.route('/updates').get(getUpdateLogs);
+criminalRouter.route('/latest-activity').get(getLatestActivityFeed);
 export default criminalRouter

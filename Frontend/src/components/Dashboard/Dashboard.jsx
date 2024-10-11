@@ -1,41 +1,47 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import CommonMistakesPieChart from './CommonMistakesPieChart';
 import DemographicBarChart from './DemographicBarChart';
-import RecidivismLineChart from './RecidivismLineChart';
+import UpdateLogsList from './UpdateLogsList';
+import ActivityFeed from './ActivityFeed';
+import CommonMistakesPieChart2 from './CommonMistakesPieChart2';
 
 const Dashboard = () => {
-    const errorData = [
-        { type: 'Missing Information', count: 40 },
-        { type: 'Incorrect Data Entry', count: 30 },
-        { type: 'Outdated Records', count: 20 },
-        { type: 'Other', count: 10 },
-      ];
-      
-      const demographicData = [
-        { ageGroup: '18-25', mistakes: 20 },
-        { ageGroup: '26-35', mistakes: 35 },
-        { ageGroup: '36-45', mistakes: 25 },
-        { ageGroup: '46+', mistakes: 15 },
-      ];
-      
-      const recidivismData = [
-        { month: 'Jan', accuracy: 90, recidivism: 5 },
-        { month: 'Feb', accuracy: 85, recidivism: 8 },
-        { month: 'Mar', accuracy: 88, recidivism: 7 },
-        { month: 'Apr', accuracy: 92, recidivism: 4 },
-      ];
-      
+  const [actionCounts, setActionCounts] = useState([]);
+  const [locationCounts, setLocationCounts] = useState([]);
+  const [updateLogs, setUpdateLogs] = useState([]);
+  const [activityFeed, setActivityFeed] = useState([]);
+
+  useEffect(() => {
+    axios.get('http://localhost:3000/api/v1/criminal/counts-by-action')
+      .then(response => {
+        const data = response.data.map(item => ({ type: item._id, count: item.count }));
+        setActionCounts(data);
+      })
+      .catch(error => console.error('Error fetching action counts:', error));
+
+    axios.get('http://localhost:3000/api/v1/criminal/updates')
+      .then(response => setUpdateLogs(response.data))
+      .catch(error => console.error('Error fetching update logs:', error));
+
+    axios.get('http://localhost:3000/api/v1/criminal/latest-activity')
+      .then(response => setActivityFeed(response.data))
+      .catch(error => console.error('Error fetching latest activity:', error));
+  }, []);
+
   return (
     <div style={{ padding: '20px' }}>
       <h1>Criminal Records Analytics Dashboard</h1>
-      <h2>Common Mistakes in Criminal Records</h2>
-      <CommonMistakesPieChart data={errorData} />
 
-      <h2>Mistakes by Demographics</h2>
-      <DemographicBarChart data={demographicData} />
+      <h2>Actions Overview (Creations, Updates, Deletions)</h2>
+      <CommonMistakesPieChart data={actionCounts} />
 
-      <h2>Recidivism Rates Over Time</h2>
-      <RecidivismLineChart data={recidivismData} />
+      
+      <UpdateLogsList logs={updateLogs} />
+
+      <ActivityFeed feed={activityFeed} />
+
+      <CommonMistakesPieChart2/>
     </div>
   );
 };

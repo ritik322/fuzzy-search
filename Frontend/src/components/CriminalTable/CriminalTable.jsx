@@ -32,8 +32,8 @@ import {
 } from "@mui/icons-material";
 import axios from "axios";
 import Fuse from "fuse.js";
-import CriminalDetailsDialog from '../CriminalDetailsDialog';
-import EditIcon from '@mui/icons-material/Edit';
+import CriminalDetailsDialog from "../CriminalDetailsDialog";
+import EditIcon from "@mui/icons-material/Edit";
 
 import "./CriminalTable.css";
 
@@ -55,10 +55,11 @@ const UserTable = ({ tableData }) => {
   const [updatingDetails, setUpdatingDetails] = useState(false);
   const [selectedCriminal, setSelectedCriminal] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [updatingCriminal, setUpdatingCriminal] = useState(false);
 
   const handleRowClick = (criminal) => {
     setSelectedCriminal(criminal); // Set the clicked criminal as selected
-  setIsDialogOpen(true); // Open the dialog
+    setIsDialogOpen(true); // Open the dialog
   };
 
   const handleCloseDialog = () => {
@@ -84,7 +85,7 @@ const UserTable = ({ tableData }) => {
   };
 
   useEffect(() => {
-    if (!tableData) {
+    if (!tableData || tableData.length == 0) {
       getData();
     } else {
       setUsers(tableData);
@@ -116,7 +117,7 @@ const UserTable = ({ tableData }) => {
   const handleClose = () => {
     setOpen(false);
     setUpdatingCriminal(false);
-  }
+  };
 
   // Handle Delete
   const handleDeleteClick = (user) => {
@@ -234,33 +235,35 @@ const UserTable = ({ tableData }) => {
 
       let response;
       // Update HR or Company depending on the modal type
-      if(!updatingCriminal){
-        response = await axios.post(
-          "http://localhost:3000/api/v1/criminal/add-criminal",
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data", // Set the content type to `multipart/form-data`
-            },
-            withCredentials: true,
-          }
-        ).then(res => res.data)
+      if (!updatingCriminal) {
+        response = await axios
+          .post(
+            "http://localhost:3000/api/v1/criminal/add-criminal",
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data", // Set the content type to `multipart/form-data`
+              },
+              withCredentials: true,
+            }
+          )
+          .then((res) => res.data);
         // Handle successful response
-        if(response.success){
-          toast.success("Criminal data uploaded successfully!")
+        if (response.success) {
+          toast.success("Criminal data uploaded successfully!");
+        } else {
+          throw Error("Error while creating!");
         }
-        else{
-          throw Error("Error while creating!")
-        }
-      }
-      else{
-        response = await axios.post(
-          `http://localhost:3000/api/v1/criminal/update-criminal/${editData._id}`,
-          editData,
-          {
-            withCredentials: true,
-          }
-        ).then(res => res.data)
+      } else {
+        response = await axios
+          .post(
+            `http://localhost:3000/api/v1/criminal/update-criminal/${editData._id}`,
+            editData,
+            {
+              withCredentials: true,
+            }
+          )
+          .then((res) => res.data);
         // Handle successful response
       }
 
@@ -289,12 +292,12 @@ const UserTable = ({ tableData }) => {
         </Button>
       </Box>
       {selectedCriminal && (
-            <CriminalDetailsDialog
-              criminal={selectedCriminal}
-              open={isDialogOpen}
-              handleClose={handleCloseDialog}
-            />
-          )}
+        <CriminalDetailsDialog
+          criminal={selectedCriminal}
+          open={isDialogOpen}
+          handleClose={handleCloseDialog}
+        />
+      )}
 
       {/* Table */}
       {!loading ? (
@@ -340,8 +343,9 @@ const UserTable = ({ tableData }) => {
                       <IconButton
                         color="error"
                         onClick={(e) => {
-                          e.preventDefault()
-                          handleDeleteClick(user)}}
+                          e.preventDefault();
+                          handleDeleteClick(user);
+                        }}
                       >
                         <DeleteIcon />
                       </IconButton>
@@ -353,7 +357,7 @@ const UserTable = ({ tableData }) => {
                           setUpdatingCriminal(true);
                         }}
                       >
-                        <EditIcon/>
+                        <EditIcon />
                       </IconButton>
                     </TableCell>
                   </TableRow>
@@ -386,7 +390,7 @@ const UserTable = ({ tableData }) => {
       >
         <div className="inside-dialog">
           <DialogTitle className="edit-dialog-title">
-            {updatingCriminal? "Add a New User": "Update User"}
+            {updatingCriminal ? "Add a New User" : "Update User"}
           </DialogTitle>
           <hr className="edit-dialog-divider" />
           <DialogContent className="edit-dialog-content">

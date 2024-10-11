@@ -69,6 +69,30 @@ const Header = ({ isLogin, setIsLogin }) => {
             >
               Users
             </NavLink>
+            <NavLink
+              to="/dashboard"
+              style={({ isActive }) => ({
+                color: isActive ? "blue" : "white",
+              })}
+            >
+              Dashboard
+            </NavLink>
+            <NavLink
+              to="/feedback"
+              style={({ isActive }) => ({
+                color: isActive ? "blue" : "white",
+              })}
+            >
+              Feedback
+            </NavLink>
+            <NavLink
+              to="/review"
+              style={({ isActive }) => ({
+                color: isActive ? "blue" : "white",
+              })}
+            >
+              Review
+            </NavLink>
           </>
         ) : (
           ""

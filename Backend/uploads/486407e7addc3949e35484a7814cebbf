@@ -1,0 +1,3 @@
+name,inCustody,age,description,gender,location,crime
+Johnnn Do,true ,30,Theft at a mall,Male,New York,Theft
+Janae Smit,false ,25,Fraud investigation,Female,Los Angeles,Fraud

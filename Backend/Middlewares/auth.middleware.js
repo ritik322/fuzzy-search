@@ -28,7 +28,7 @@ const authenticateUser = async (req, res, next) => {
     
   } catch (error) {
     console.log(error);
-    res.status(400).json({message: "user must be logged in"})
+    res.status(400).json({message: "user must be logged in",success: false})
   }
   
 };

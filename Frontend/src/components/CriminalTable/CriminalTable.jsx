@@ -32,11 +32,11 @@ import {
 } from "@mui/icons-material";
 import axios from "axios";
 import Fuse from "fuse.js";
-import CriminalDetailsDialog from '../CriminalDetailsDialog';
+import CriminalDetailsDialog from "../CriminalDetailsDialog";
 
 import "./CriminalTable.css";
 
-const UserTable = ({tableData}) => {
+const UserTable = ({ tableData }) => {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUsers, setSelectedUsers] = useState([]);
@@ -52,17 +52,27 @@ const UserTable = ({tableData}) => {
   const [noValidEmail, showNoValidEmail] = useState(false);
   const [noValidPhone, showNoValidPhone] = useState(false);
   const [updatingDetails, setUpdatingDetails] = useState(false);
+  const [selectedCriminal, setSelectedCriminal] = useState(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const handleRowClick = (criminal) => {
+    setSelectedCriminal(criminal); // Set the clicked criminal as selected
+  setIsDialogOpen(true); // Open the dialog
+  };
+
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false); // Close the dialog
+    setSelectedCriminal(null); // Clear the selected criminal after closing
+  };
 
   const getData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        "http://localhost:3000/api/v1/criminal/get-all-criminals",
-        {
+      const response = await axios
+        .get("http://localhost:3000/api/v1/criminal/get-all-criminals", {
           withCredentials: true,
-        }
-      ).then(res => res.data)
-      console.log(response)
+        })
+        .then((res) => res.data);
       setUsers(response);
       setFilteredUsers(response);
       setLoading(false);
@@ -73,11 +83,10 @@ const UserTable = ({tableData}) => {
   };
 
   useEffect(() => {
-    if(!tableData){
-      getData()
-    }
-    else{
-      setUsers(tableData)
+    if (!tableData) {
+      getData();
+    } else {
+      setUsers(tableData);
     }
   }, [tableData]);
 
@@ -179,11 +188,18 @@ const UserTable = ({tableData}) => {
     }
   };
 
-  const requiredFields = ["name", "crime", "age", "location", "gender", "photo"];
+  const requiredFields = [
+    "name",
+    "crime",
+    "age",
+    "location",
+    "gender",
+    "photo",
+  ];
   const validateFields = () => {
     // Check if all required fields are present and not empty in `editData`
     for (const field of requiredFields) {
-      if (!editData[field] ) {
+      if (!editData[field]) {
         toast.error(`Field "${field}" is required!`);
         return false;
       }
@@ -215,22 +231,19 @@ const UserTable = ({tableData}) => {
       let response;
       // Update HR or Company depending on the modal type
 
-      response = await axios.post(
-        "http://localhost:3000/api/v1/criminal/add-criminal",
-        formData,
-        {
+      response = await axios
+        .post("http://localhost:3000/api/v1/criminal/add-criminal", formData, {
           headers: {
             "Content-Type": "multipart/form-data", // Set the content type to `multipart/form-data`
           },
           withCredentials: true,
-        }
-      ).then(res => res.data)
+        })
+        .then((res) => res.data);
       // Handle successful response
-      if(response.success){
-        toast.success("Criminal data uploaded successfully!")
-      }
-      else{
-        throw Error("Error while creating!")
+      if (response.success) {
+        toast.success("Criminal data uploaded successfully!");
+      } else {
+        throw Error("Error while creating!");
       }
 
       getData(); // Fetch updated data after save
@@ -256,6 +269,13 @@ const UserTable = ({tableData}) => {
           Add User
         </Button>
       </Box>
+      {selectedCriminal && (
+            <CriminalDetailsDialog
+              criminal={selectedCriminal}
+              open={isDialogOpen}
+              handleClose={handleCloseDialog}
+            />
+          )}
 
       {/* Table */}
       {!loading ? (
@@ -276,7 +296,11 @@ const UserTable = ({tableData}) => {
               {filteredUsers
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((user, index) => (
-                  <TableRow key={index} hover>
+                  <TableRow
+                    key={index}
+                    onClick={() => handleRowClick(user)}
+                    hover
+                  >
                     <TableCell>
                       <img
                         src={user.photo}
@@ -296,7 +320,9 @@ const UserTable = ({tableData}) => {
                     <TableCell>
                       <IconButton
                         color="error"
-                        onClick={() => handleDeleteClick(user)}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          handleDeleteClick(user)}}
                       >
                         <DeleteIcon />
                       </IconButton>

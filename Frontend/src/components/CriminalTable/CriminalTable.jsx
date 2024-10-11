@@ -32,7 +32,8 @@ import {
 } from "@mui/icons-material";
 import axios from "axios";
 import Fuse from "fuse.js";
-import CriminalDetailsDialog from "../CriminalDetailsDialog";
+import CriminalDetailsDialog from '../CriminalDetailsDialog';
+import EditIcon from '@mui/icons-material/Edit';
 
 import "./CriminalTable.css";
 
@@ -112,7 +113,10 @@ const UserTable = ({ tableData }) => {
   };
 
   const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setOpen(false);
+    setUpdatingCriminal(false);
+  }
 
   // Handle Delete
   const handleDeleteClick = (user) => {
@@ -230,20 +234,34 @@ const UserTable = ({ tableData }) => {
 
       let response;
       // Update HR or Company depending on the modal type
-
-      response = await axios
-        .post("http://localhost:3000/api/v1/criminal/add-criminal", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data", // Set the content type to `multipart/form-data`
-          },
-          withCredentials: true,
-        })
-        .then((res) => res.data);
-      // Handle successful response
-      if (response.success) {
-        toast.success("Criminal data uploaded successfully!");
-      } else {
-        throw Error("Error while creating!");
+      if(!updatingCriminal){
+        response = await axios.post(
+          "http://localhost:3000/api/v1/criminal/add-criminal",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data", // Set the content type to `multipart/form-data`
+            },
+            withCredentials: true,
+          }
+        ).then(res => res.data)
+        // Handle successful response
+        if(response.success){
+          toast.success("Criminal data uploaded successfully!")
+        }
+        else{
+          throw Error("Error while creating!")
+        }
+      }
+      else{
+        response = await axios.post(
+          `http://localhost:3000/api/v1/criminal/update-criminal/${editData._id}`,
+          editData,
+          {
+            withCredentials: true,
+          }
+        ).then(res => res.data)
+        // Handle successful response
       }
 
       getData(); // Fetch updated data after save
@@ -252,8 +270,9 @@ const UserTable = ({ tableData }) => {
       // Handle backend errors
       toast.error("An error Occurred: ", err.message);
     } finally {
-      setEditData("");
+      setEditData({});
       setUpdatingDetails(false); // Reset updating state
+      setUpdatingCriminal(false);
     }
   };
 
@@ -326,6 +345,16 @@ const UserTable = ({ tableData }) => {
                       >
                         <DeleteIcon />
                       </IconButton>
+                      <IconButton
+                        color="error"
+                        onClick={() => {
+                          setEditData(user);
+                          handleOpen();
+                          setUpdatingCriminal(true);
+                        }}
+                      >
+                        <EditIcon/>
+                      </IconButton>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -357,7 +386,7 @@ const UserTable = ({ tableData }) => {
       >
         <div className="inside-dialog">
           <DialogTitle className="edit-dialog-title">
-            Add a New User
+            {updatingCriminal? "Add a New User": "Update User"}
           </DialogTitle>
           <hr className="edit-dialog-divider" />
           <DialogContent className="edit-dialog-content">

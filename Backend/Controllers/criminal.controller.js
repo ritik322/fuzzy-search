@@ -149,6 +149,9 @@ const addCriminal = async (req, res) => {
 
 const updateCriminal = async (req, res) => {
   try {
+    console.log("hello");
+    console.log(req.body);
+    console.log(req.files);
     const { name, inCustody, age, description, location, crime} = req.body;
     const {id} = req.params;
     const updatedData = {};
@@ -510,5 +513,77 @@ const exportCriminalData = async (req, res) => {
   }
 };
 
+const getCountsByAction = async (req, res) => {
+  try {
+    const actionCounts = await Log.aggregate([
+      {
+        $group: {
+          _id: "$action",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
 
-export {updateReviewStatusToCleared, getAllLogs, exportCriminalData, addMultipleCriminals, updateCriminal, addCriminal, deleteCriminal, deleteCriminals, getCriminal, getAllCriminals, getAllReviewingCriminals };
+    res.status(200).json(actionCounts);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching action counts: " + error });
+  }
+};
+
+const getCrimesByLocation = async (req, res) => {
+  try {
+    const crimesByLocation = await Criminal.aggregate([
+      {
+        $group: {
+          _id: "$location", // Group by location
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    res.status(200).json(crimesByLocation);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching crime counts by location: " + error });
+  }
+};
+
+const getUpdateLogs = async (req, res) => {
+  try {
+    const logs = await Log.find({ action: "update" }, { criminalId: 1, details: 1, iv:1 });
+    const decryptedLogs = logs.map(log => {
+      try {
+          const decryptedDetails = decrypt(log.details, log.iv); // Pass both encrypted text and iv
+          return { ...log._doc, details: decryptedDetails }; // Spread the rest of the log data
+      } catch (error) {
+          console.error("Error decrypting log details:", error.message);
+          return { ...log._doc, details: "Error decrypting details" };
+      }
+  });
+
+    res.status(200).json(decryptedLogs);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching update logs: " + error });
+  }
+};
+
+const getLatestActivityFeed = async (req, res) => {
+  try {
+    const latestLogs = await Log.find().sort({ timestamp: -1 }).limit(10); // Fetch the 10 latest logs
+    const decryptedLogs = latestLogs.map(log => {
+      try {
+          const decryptedDetails = decrypt(log.details, log.iv); // Pass both encrypted text and iv
+          return { ...log._doc, details: decryptedDetails }; // Spread the rest of the log data
+      } catch (error) {
+          console.error("Error decrypting log details:", error.message);
+          return { ...log._doc, details: "Error decrypting details" };
+      }
+  });
+    res.status(200).json(decryptedLogs);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching latest activity: " + error });
+  }
+};
+
+
+
+export {getCountsByAction, getCrimesByLocation, getUpdateLogs, getLatestActivityFeed, updateReviewStatusToCleared, getAllLogs, exportCriminalData, addMultipleCriminals, updateCriminal, addCriminal, deleteCriminal, deleteCriminals, getCriminal, getAllCriminals, getAllReviewingCriminals };

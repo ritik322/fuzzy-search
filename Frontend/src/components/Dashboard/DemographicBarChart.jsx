@@ -1,15 +1,17 @@
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from 'recharts';
 
-const DemographicBarChart = ({ data }) => (
-  <BarChart width={600} height={300} data={data}>
-    <CartesianGrid strokeDasharray="3 3" />
-    <XAxis dataKey="ageGroup" />
-    <YAxis />
-    <Tooltip />
-    <Legend />
-    <Bar dataKey="mistakes" fill="#8884d8" />
-  </BarChart>
-);
+const DemographicBarChart = ({ data }) => {
+  return (
+    <BarChart width={500} height={300} data={data}>
+      <CartesianGrid strokeDasharray="3 3" />
+      <XAxis dataKey="location" />
+      <YAxis />
+      <Tooltip />
+      <Legend />
+      <Bar dataKey="count" fill="#82ca9d" />
+    </BarChart>
+  );
+};
 
 export default DemographicBarChart;

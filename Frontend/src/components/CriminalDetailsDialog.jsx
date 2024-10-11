@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, IconButton, Typography } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, IconButton, Typography, Box } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
+import { AccountCircle, CalendarToday, LocationOn, Gavel, Wc, Lock } from '@mui/icons-material'; // Icons for better data representation
 
 const CriminalDetailsDialog = ({ criminal }) => {
   const [open, setOpen] = useState(false);
@@ -15,7 +16,7 @@ const CriminalDetailsDialog = ({ criminal }) => {
 
   return (
     <div>
-      <IconButton onClick={handleClickOpen} aria-label="view details" sx={{ color: 'primary.main' }}>
+      <IconButton onClick={handleClickOpen} aria-label="view details" sx={styles.infoButton}>
         <InfoIcon />
       </IconButton>
 
@@ -30,13 +31,50 @@ const CriminalDetailsDialog = ({ criminal }) => {
             alt={`${criminal.name}'s photo`}
             style={styles.image}
           />
-          <Typography variant="h6" sx={styles.typography}><strong>Name:</strong> {criminal.name}</Typography>
-          <Typography variant="body1" sx={styles.typography}><strong>In Custody:</strong> {criminal.inCustody ? 'Yes' : 'No'}</Typography>
-          <Typography variant="body1" sx={styles.typography}><strong>Age:</strong> {criminal.age}</Typography>
-          <Typography variant="body1" sx={styles.typography}><strong>Description:</strong> {criminal.description}</Typography>
-          <Typography variant="body1" sx={styles.typography}><strong>Gender:</strong> {criminal.gender}</Typography>
-          <Typography variant="body1" sx={styles.typography}><strong>Location:</strong> {criminal.location}</Typography>
-          <Typography variant="body1" sx={styles.typography}><strong>Crime:</strong> {criminal.crime}</Typography>
+          
+          <Box sx={styles.detailsContainer}>
+            {/* Name */}
+            <Box sx={styles.detailItem}>
+              <AccountCircle sx={styles.icon} />
+              <Typography variant="h6" sx={styles.detailText}><strong>Name:</strong> {criminal.name}</Typography>
+            </Box>
+
+            {/* In Custody */}
+            <Box sx={styles.detailItem}>
+              <Lock sx={styles.icon} />
+              <Typography variant="body1" sx={styles.detailText}><strong>In Custody:</strong> {criminal.inCustody ? 'Yes' : 'No'}</Typography>
+            </Box>
+
+            {/* Age */}
+            <Box sx={styles.detailItem}>
+              <CalendarToday sx={styles.icon} />
+              <Typography variant="body1" sx={styles.detailText}><strong>Age:</strong> {criminal.age}</Typography>
+            </Box>
+
+            {/* Description */}
+            <Box sx={styles.detailItem}>
+              <Gavel sx={styles.icon} />
+              <Typography variant="body1" sx={styles.detailText}><strong>Description:</strong> {criminal.description}</Typography>
+            </Box>
+
+            {/* Gender */}
+            <Box sx={styles.detailItem}>
+              <Wc sx={styles.icon} />
+              <Typography variant="body1" sx={styles.detailText}><strong>Gender:</strong> {criminal.gender}</Typography>
+            </Box>
+
+            {/* Location */}
+            <Box sx={styles.detailItem}>
+              <LocationOn sx={styles.icon} />
+              <Typography variant="body1" sx={styles.detailText}><strong>Location:</strong> {criminal.location}</Typography>
+            </Box>
+
+            {/* Crime */}
+            <Box sx={styles.detailItem}>
+              <Gavel sx={styles.icon} />
+              <Typography variant="body1" sx={styles.detailText}><strong>Crime:</strong> {criminal.crime}</Typography>
+            </Box>
+          </Box>
         </DialogContent>
 
         <DialogActions sx={styles.dialogActions}>
@@ -49,48 +87,83 @@ const CriminalDetailsDialog = ({ criminal }) => {
   );
 };
 
-// Define styles using a consistent theme-based approach
+// Updated styles for better data display
 const styles = {
+  infoButton: {
+    color: '#1976d2',
+    '&:hover': {
+      color: '#004ba0', // Slightly darker shade on hover for info icon
+    },
+  },
   dialogTitle: {
-    backgroundColor: 'primary.main',
+    backgroundColor: '#004ba0',
     color: 'white',
     textAlign: 'center',
     fontWeight: 'bold',
     padding: '16px 24px',
+    letterSpacing: '1.5px',
+    textTransform: 'uppercase',
+    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)',
   },
   dialogContent: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: 2,
-    padding: '20px 24px',
-    backgroundColor: '#f5f5f5', // Light background color for content
+    gap: '16px',
+    padding: '24px',
+    backgroundColor: '#f5f5f5',
+    borderRadius: '8px',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
   },
   image: {
-    borderRadius: '10px',
+    marginTop:"25px",
+    borderRadius: '50%',
     marginBottom: '16px',
-    width: '150px',
-    height: '150px',
-    objectFit: 'cover', // Ensures the image covers the box without being stretched
-    boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)', // Adds a subtle shadow to the image
+    width: '120px',
+    height: '120px',
+    objectFit: 'cover',
+    boxShadow: '0 6px 12px rgba(0, 0, 0, 0.15)',
+    border: '3px solid #1976d2',
   },
-  typography: {
+  detailsContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
+    gap: '12px',
+    padding: '0 24px',
+  },
+  detailItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    borderBottom: '1px solid #e0e0e0',
+    paddingBottom: '8px',
     marginBottom: '8px',
-    color: '#333', // Darker text for readability
+  },
+  detailText: {
+    color: '#333',
+  },
+  icon: {
+    color: '#1976d2',
   },
   dialogActions: {
     justifyContent: 'center',
     padding: '16px',
-    backgroundColor: '#f5f5f5', // Match the content's background color
+    backgroundColor: '#f5f5f5',
   },
   closeButton: {
-    backgroundColor: '#1976d2', // Consistent with Material-UI primary color
+    backgroundColor: '#1976d2',
     color: 'white',
     fontWeight: 'bold',
     padding: '8px 24px',
+    textTransform: 'uppercase',
+    transition: 'background-color 0.3s ease',
     '&:hover': {
-      backgroundColor: '#1565c0', // Darker shade of blue on hover
+      backgroundColor: '#004ba0',
+      transform: 'scale(1.05)',
     },
+    borderRadius: '24px',
+    boxShadow: '0 3px 6px rgba(0, 0, 0, 0.1)',
   },
 };
 

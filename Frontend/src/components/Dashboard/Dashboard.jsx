@@ -1,48 +1,100 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import CommonMistakesPieChart from './CommonMistakesPieChart';
-import DemographicBarChart from './DemographicBarChart';
+import CommonMistakesPieChart2 from './CommonMistakesPieChart2';
 import UpdateLogsList from './UpdateLogsList';
 import ActivityFeed from './ActivityFeed';
-import CommonMistakesPieChart2 from './CommonMistakesPieChart2';
+import { Card, Grid, Typography, Box, Divider, CircularProgress } from '@mui/material'; // Using Material UI for better design
 
 const Dashboard = () => {
   const [actionCounts, setActionCounts] = useState([]);
-  const [locationCounts, setLocationCounts] = useState([]);
   const [updateLogs, setUpdateLogs] = useState([]);
   const [activityFeed, setActivityFeed] = useState([]);
+  const [loading, setLoading] = useState(true); // For loading state
 
   useEffect(() => {
-    axios.get('http://localhost:3000/api/v1/criminal/counts-by-action')
-      .then(response => {
-        const data = response.data.map(item => ({ type: item._id, count: item.count }));
-        setActionCounts(data);
-      })
-      .catch(error => console.error('Error fetching action counts:', error));
+    const fetchData = async () => {
+      try {
+        const actionResponse = await axios.get('http://localhost:3000/api/v1/criminal/counts-by-action');
+        const actions = actionResponse.data.map(item => ({ type: item._id, count: item.count }));
+        setActionCounts(actions);
 
-    axios.get('http://localhost:3000/api/v1/criminal/updates')
-      .then(response => setUpdateLogs(response.data))
-      .catch(error => console.error('Error fetching update logs:', error));
+        const updatesResponse = await axios.get('http://localhost:3000/api/v1/criminal/updates');
+        setUpdateLogs(updatesResponse.data);
 
-    axios.get('http://localhost:3000/api/v1/criminal/latest-activity')
-      .then(response => setActivityFeed(response.data))
-      .catch(error => console.error('Error fetching latest activity:', error));
+        const activityResponse = await axios.get('http://localhost:3000/api/v1/criminal/latest-activity');
+        setActivityFeed(activityResponse.data);
+
+        setLoading(false); // Loading done
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>Criminal Records Analytics Dashboard</h1>
+    <Box sx={{ padding: '40px', backgroundColor: '#f4f6f8', minHeight: '100vh' }}>
+      <Typography variant="h4" gutterBottom align="center" sx={{ color: '#003366' }}> {/* Dark blue color for title */}
+        Criminal Records Analytics
+      </Typography>
 
-      <h2>Actions Overview (Creations, Updates, Deletions)</h2>
-      <CommonMistakesPieChart data={actionCounts} />
+      <Grid container spacing={4}> {/* Increased spacing between cards */}
+        {/* Actions Overview Section */}
+        <Grid item xs={12} md={6}>
+          <Card sx={{ padding: '20px', boxShadow: 3, backgroundColor: '#e6f0ff', border: '1px solid #0056b3' }}> {/* Light blue background and border */}
+            <Typography variant="h6" gutterBottom sx={{ color: '#0056b3' }}>
+              Actions Overview (Creations, Updates, Deletions)
+            </Typography>
+            <Divider />
+            <CommonMistakesPieChart data={actionCounts} />
+          </Card>
+        </Grid>
 
-      
-      <UpdateLogsList logs={updateLogs} />
+        {/* Update Logs Section */}
+        <Grid item xs={12} md={6}>
+          <Card sx={{ padding: '20px', boxShadow: 3, backgroundColor: '#e6f0ff', border: '1px solid #0056b3' }}> 
+            <Typography variant="h6" gutterBottom sx={{ color: '#0056b3' }}>
+              Latest Updates
+            </Typography>
+            <Divider />
+            <UpdateLogsList logs={updateLogs} />
+          </Card>
+        </Grid>
 
-      <ActivityFeed feed={activityFeed} />
+        {/* Activity Feed Section */}
+        <Grid item xs={12} md={6}>
+          <Card sx={{ padding: '20px', boxShadow: 3, backgroundColor: '#e6f0ff', border: '1px solid #0056b3' }}>
+            <Typography variant="h6" gutterBottom sx={{ color: '#0056b3' }}>
+              Recent Activity Feed
+            </Typography>
+            <Divider />
+            <ActivityFeed feed={activityFeed} />
+          </Card>
+        </Grid>
 
-      <CommonMistakesPieChart2/>
-    </div>
+        {/* Second Pie Chart Example */}
+        <Grid item xs={12} md={6}>
+          <Card sx={{ padding: '20px', boxShadow: 3, backgroundColor: '#e6f0ff', border: '1px solid #0056b3' }}>
+            <Typography variant="h6" gutterBottom sx={{ color: '#0056b3' }}>
+              Common Mistakes Overview
+            </Typography>
+            <Divider />
+            <CommonMistakesPieChart2 />
+          </Card>
+        </Grid>
+      </Grid>
+    </Box>
   );
 };
 

@@ -77,14 +77,7 @@ const Header = ({ isLogin, setIsLogin }) => {
             >
               Dashboard
             </NavLink>
-            <NavLink
-              to="/feedback"
-              style={({ isActive }) => ({
-                color: isActive ? "blue" : "white",
-              })}
-            >
-              Feedback
-            </NavLink>
+
             <NavLink
               to="/review"
               style={({ isActive }) => ({

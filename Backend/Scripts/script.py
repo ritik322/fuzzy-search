@@ -10,9 +10,6 @@ from sentence_transformers import SentenceTransformer, util
 from googletrans import Translator
 
 # Initialize models only once
-bert_tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-bert_model = BertModel.from_pretrained('bert-base-uncased')
-sbert_model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
 test_model = SentenceTransformer('shahrukhx01/paraphrase-mpnet-base-v2-fuzzy-matcher')
 
 translator = Translator()
@@ -67,10 +64,8 @@ def calculate_sbert_similarity(name1, name2):
 
 def combined_similarity(name1, name2):
     traditional_score = traditional_similarity(name1, name2)
-    bert_score = bert_similarity(name1, name2)
-    sbert_score = calculate_sbert_similarity(name1, name2)
     test_model_score = calculate_test_model_similarity(name1, name2)
-    ml_score = bert_score * 0.1 + sbert_score * 0.1 + test_model_score * 0.8
+    ml_score = test_model_score * 1
     final_score = (0.6 * traditional_score) + (0.4 * ml_score)
     return final_score
 

@@ -6,6 +6,55 @@ import xlsx from "xlsx" // For Excel files
 import fs from "fs"
 import { Parser as json2csv } from 'json2csv'; 
 import path from "path";
+import { spawn } from 'child_process';
+import { Log } from "../Models/log.model.js";
+import crypto from "crypto";
+
+// Use a fixed key for encryption/decryption (keep it secret)
+const key = crypto.scryptSync("your-password", "salt", 32); // Use a secure password and salt
+const algorithm = 'aes-256-cbc';
+
+// Encrypt function that returns both the encrypted text and the iv used
+function encrypt(text) {
+    const iv = crypto.randomBytes(16); // Generate a new IV for each encryption
+    const cipher = crypto.createCipheriv(algorithm, key, iv);
+    let encrypted = cipher.update(text, 'utf-8', 'hex');
+    encrypted += cipher.final('hex');
+    return { encryptedData: encrypted, iv: iv.toString('hex') };
+}
+
+function decrypt(encryptedText, iv) {
+    if (!iv) {
+        throw new Error("Missing IV for decryption");
+    }
+    
+    const decipher = crypto.createDecipheriv(algorithm, key, Buffer.from(iv, 'hex'));
+    let decrypted = decipher.update(encryptedText, 'hex', 'utf-8');
+    decrypted += decipher.final('utf-8');
+    return decrypted;
+}
+
+const getAllLogs = async (req, res) => {
+  try {
+      const logs = await Log.find().sort({ timestamp: -1 });
+      
+      // Decrypt the 'details' field for each log
+      const decryptedLogs = logs.map(log => {
+          try {
+              const decryptedDetails = decrypt(log.details, log.iv); // Pass both encrypted text and iv
+              return { ...log._doc, details: decryptedDetails }; // Spread the rest of the log data
+          } catch (error) {
+              console.error("Error decrypting log details:", error.message);
+              return { ...log._doc, details: "Error decrypting details" };
+          }
+      });
+
+      res.status(200).json(decryptedLogs);
+  } catch (error) {
+      res.status(500).json({ message: "Error fetching logs: " + error });
+  }
+};
+
 
 // Multer setup for file upload
 const upload = multer({ dest: 'uploads/' });
@@ -18,67 +67,91 @@ const getCriminal = async(req, res) => {
   res.status(200).json({data: criminal,success: true})
 }
 
-const getAllCriminals = async(req, res) => {
+const getAllCriminals = async (req, res) => {
   try {
-    const criminals = await Criminal.find();
+    // Fetch only criminals with reviewStatus as "cleared"
+    const criminals = await Criminal.find({ reviewStatus: "cleared" });
     return res.json(criminals);
   } catch (error) {
-    return res.status(500).json({ message: "Error" + error.toString() });
+    return res.status(500).json({ message: "Error: " + error.toString() });
   }
-}
+};
+
+const getAllReviewingCriminals = async (req, res) => {
+  try {
+    // Fetch only criminals with reviewStatus as "cleared"
+    const criminals = await Criminal.find({ reviewStatus: "under review" });
+    return res.json(criminals);
+  } catch (error) {
+    return res.status(500).json({ message: "Error: " + error.toString() });
+  }
+};
 
 const addCriminal = async (req, res) => {
   try {
-    const { name, inCustody, age, description, gender, location, crime } = req.body;
-  
+    const { name, inCustody, age, description, gender, location,crime } = req.body;
+    console.log(crime)
     const isCreatedCriminal = await Criminal.findOne({
       $and: [{ name }, { gender }, {age}, {location}],
     });
     if (isCreatedCriminal) {
-      throw new Error(409, "Criminal aleardy exists");
+      throw new Error("Criminal aleardy exists");
     }
   
     if (
-      [name, inCustody, description, gender, location, crime].some(
+      [name, inCustody, description, gender, location].some(
         (val) => val === ""
       )
     ) {
-      throw new Error(400, "All fields are Required");
+      throw new Error("All fields are Required");
     }
     const localPathName = req.file?.path;
-    if (!localPathName) throw new Error(400, "Photo is required");
-  
-    const uploadResult = await uploadCloudinary(localPathName);
+    
+    let uploadResult;
+    if(localPathName){
+      uploadResult = await uploadCloudinary(localPathName);
+    }
   
     const createdCriminal = await Criminal.create({
       name,
-      photo: uploadResult.url,
+      photo: uploadResult?.url || "",
       inCustody,
       age,
+      crime,
       description,
       gender,
       location,
-      crime,
+    });
+    const encryptedString = encrypt(`Criminal ${createdCriminal.name} was created.`)
+    await Log.create({
+      action: "create",
+      criminalId: createdCriminal._id,
+      details: encryptedString.encryptedData,
+      iv: encryptedString.iv,
     });
   
     const criminalCreated = await Criminal.findOne({ _id: createdCriminal._id });
     if (!criminalCreated)
-      throw new Error(500, "Something went wrong while creating Criminal");
+      throw new Error("Something went wrong while creating Criminal");
     res
       .status(201)
       .json({
         statusCode: 201,
         message: "Criminal created successfully",
+        success: true,
         data: criminalCreated,
       });
   } catch (error) {
-    console.log("Couldn't create Criminal: ", error);
-    res.status(500).send("Something Went Wrong");
+    console.log("Couldn't create Criminal: ", error.message);
+    res.status(400).json({message: "something went wrong"});
   }
 };
 
 const updateCriminal = async (req, res) => {
   try {
+    console.log("hello");
+    console.log(req.body);
+    console.log(req.files);
     const { name, inCustody, age, description, location, crime} = req.body;
     const {id} = req.params;
     const updatedData = {};
@@ -102,6 +175,13 @@ const updateCriminal = async (req, res) => {
     if (!updatedCriminal) {
       return res.status(404).json({ message: "Criminal not found" });
     }
+    const encryptedString = encrypt(`Criminal ${updatedCriminal.name} was updated.`);
+    await Log.create({
+      action: "update",
+      criminalId: updatedCriminal._id,
+      details: encryptedString.encryptedData,
+      iv: encryptedString.iv
+    });
 
     // Respond with the updated user data
     res.status(200).json({
@@ -115,6 +195,46 @@ const updateCriminal = async (req, res) => {
   }
 };
 
+const updateReviewStatusToCleared = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find the criminal record by ID and update the reviewStatus to "cleared"
+    const updatedCriminal = await Criminal.findByIdAndUpdate(
+      { _id: id },
+      { reviewStatus: "cleared" }, // Set reviewStatus to "cleared"
+      {
+        new: true, // Return the updated document
+        runValidators: true, // Run schema validators
+      }
+    );
+
+    if (!updatedCriminal) {
+      return res.status(404).json({ message: "Criminal not found" });
+    }
+
+    const encryptedString = encrypt(`Criminal ${updatedCriminal.name}'s review status was updated to "cleared".`)
+    // Optionally, log the action
+    await Log.create({
+      action: "update",
+      criminalId: updatedCriminal._id,
+      details: encryptedString.encryptedData,
+      iv: encryptedString.iv
+    });
+
+    // Respond with the updated data
+    res.status(200).json({
+      message: "Criminal review status updated to 'cleared' successfully",
+      updated: true,
+      criminal: updatedCriminal,
+    });
+  } catch (error) {
+    console.error("Error updating review status:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+
 const deleteCriminal = async (req, res) => {
   try {
     const { id } = req.params;
@@ -124,6 +244,14 @@ const deleteCriminal = async (req, res) => {
     if (!deletingCriminal) {
       return res.status(404).json({ message: "Criminal not found" });
     }
+
+    const encryptedString = encrypt(`Criminal ${deletingCriminal.name} was deleted.`);
+    await Log.create({
+      action: "delete",
+      criminalId: deletingCriminal._id,
+      details: encryptedString.encryptedData,
+      iv: encryptedString.iv
+    });
 
     res
       .status(200)
@@ -149,6 +277,16 @@ const deleteCriminals = async(req, res) => {
       const criminals = await Criminal.find({ _id: { $in: ids } });
       if (!criminals || criminals.length === 0) {
         return res.status(404).json({ message: "Criminals not found" });
+      }
+      const criminalsToDelete = await Criminal.find({ _id: { $in: ids } });
+      for(deletingCriminal in criminalsToDelete){
+        const encryptedString = encrypt(`Criminal ${deletingCriminal.name} was deleted.`)
+        await Log.create({
+          action: "delete",
+          criminalId: deletingCriminal._id,
+          details: encryptedString.encryptedData,
+          iv: encryptedString.iv
+        });
       }
 
       const criminalDeleteResult = await Criminal.deleteMany({ _id: { $in: ids } });
@@ -183,7 +321,6 @@ const parseCSV = async (filePath) => {
   });
 };
 
-// Route to upload file with multiple criminals
 const addMultipleCriminals = async (req, res) => {
   const file = req.file; // CSV or Excel file
   if (!file) throw new Error(400, 'File is required');
@@ -192,33 +329,27 @@ const addMultipleCriminals = async (req, res) => {
 
   // Parse the uploaded file based on its type (CSV or Excel)
   if (file.mimetype === 'text/csv') {
-    console.log("Condition 1")
+    console.log("Condition 1");
     criminalsData = await parseCSV(file.path);
-  } else if (
-    file.mimetype ===
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-  ) {
-    console.log("Condition 2")
+  } else if (file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+    console.log("Condition 2");
     const workbook = xlsx.readFile(file.path);
     const sheet_name_list = workbook.SheetNames;
     criminalsData = xlsx.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
   } else {
     throw new Error(400, 'Unsupported file format');
   }
-  
+
   console.log(criminalsData);
 
   // Loop over each entry and add criminal
   const addedCriminals = [];
   for (const data of criminalsData) {
-    console.log("data is: ", data);
-    
+    console.log('start');
     // Normalize the keys if necessary
     const { name, age, description, gender, location, crime } = data;
     const inCustody = data.inCustody.trim();
-    // Log the values
-    console.log(name, ", ", inCustody, ", ", age, ", ", description, ", ", gender, ", ", location, ", ", crime);
-    
+
     // Check for existing criminal
     const isCreatedCriminal = await Criminal.findOne({
       $and: [{ name }, { gender }, { age }, { location }],
@@ -227,6 +358,57 @@ const addMultipleCriminals = async (req, res) => {
     if (isCreatedCriminal) {
       console.log(`Criminal ${name} already exists. Skipping...`);
       continue;
+    }
+
+    const criminals = await Criminal.find();
+    console.log("criminals: ", criminals);
+
+    // Wrap the Python spawn process in a Promise
+    const runPythonScript = (name, criminals) => {
+      return new Promise((resolve, reject) => {
+        const pythonProcess = spawn('python', ['./scripts/script2.py', name, JSON.stringify(criminals)]);
+
+        let result = '';
+        pythonProcess.stdout.on('data', (data) => {
+          result += data.toString();
+        });
+
+        pythonProcess.stderr.on('data', (data) => {
+          console.error(`Error: ${data}`);
+          reject(new Error(`Error in Python script: ${data}`));
+        });
+
+        pythonProcess.on('close', (code) => {
+          if (code === 0) {
+            resolve(JSON.parse(result)); // Parse the result from Python
+          } else {
+            reject(new Error('Python script failed'));
+          }
+        });
+      });
+    };
+
+    // Await the result from the Python script
+    let criminalsWithScores;
+    try {
+      criminalsWithScores = await runPythonScript(name, criminals);
+      console.log("Done");
+      console.log(criminalsWithScores); // Send the results back to the frontend
+    } catch (error) {
+      return res.status(500).send('Error processing the name');
+    }
+
+    // Check for similar records based on score and matching fields
+    let similar_record;
+    console.log("here");
+    for (const criminal_data of criminalsWithScores) {
+      console.log("Here 2");
+      console.log("criminal_data: ", criminal_data);
+      if ((criminal_data.criminal_data.score > 80) && (criminal_data.criminal_data.age == age || criminal_data.criminal_data.location == location)) {
+        console.log("Condtion True");
+        similar_record = criminal_data.criminal_data;
+        break;
+      }
     }
 
     if ([name, inCustody, description, gender, location, crime].some(val => !val || val === "")) {
@@ -251,6 +433,17 @@ const addMultipleCriminals = async (req, res) => {
       gender,
       location,
       crime,
+      reviewStatus: (similar_record ? "under review" : "cleared"),
+      matchPercentage: (similar_record ? similar_record.score : null),
+      matchedRecord: (similar_record ? similar_record._id : null)
+    });
+
+    const encryptedString = encrypt(`Criminal ${createdCriminal.name} was created via bulk upload.`)
+    await Log.create({
+      action: "create",
+      criminalId: createdCriminal._id,
+      details: encryptedString.encryptedData,
+      iv: encryptedString.iv
     });
 
     addedCriminals.push(createdCriminal);
@@ -320,4 +513,77 @@ const exportCriminalData = async (req, res) => {
   }
 };
 
-export { exportCriminalData, addMultipleCriminals, updateCriminal, addCriminal, deleteCriminal, deleteCriminals, getCriminal, getAllCriminals };
+const getCountsByAction = async (req, res) => {
+  try {
+    const actionCounts = await Log.aggregate([
+      {
+        $group: {
+          _id: "$action",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    res.status(200).json(actionCounts);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching action counts: " + error });
+  }
+};
+
+const getCrimesByLocation = async (req, res) => {
+  try {
+    const crimesByLocation = await Criminal.aggregate([
+      {
+        $group: {
+          _id: "$location", // Group by location
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    res.status(200).json(crimesByLocation);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching crime counts by location: " + error });
+  }
+};
+
+const getUpdateLogs = async (req, res) => {
+  try {
+    const logs = await Log.find({ action: "update" }, { criminalId: 1, details: 1, iv:1 });
+    const decryptedLogs = logs.map(log => {
+      try {
+          const decryptedDetails = decrypt(log.details, log.iv); // Pass both encrypted text and iv
+          return { ...log._doc, details: decryptedDetails }; // Spread the rest of the log data
+      } catch (error) {
+          console.error("Error decrypting log details:", error.message);
+          return { ...log._doc, details: "Error decrypting details" };
+      }
+  });
+
+    res.status(200).json(decryptedLogs);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching update logs: " + error });
+  }
+};
+
+const getLatestActivityFeed = async (req, res) => {
+  try {
+    const latestLogs = await Log.find().sort({ timestamp: -1 }).limit(10); // Fetch the 10 latest logs
+    const decryptedLogs = latestLogs.map(log => {
+      try {
+          const decryptedDetails = decrypt(log.details, log.iv); // Pass both encrypted text and iv
+          return { ...log._doc, details: decryptedDetails }; // Spread the rest of the log data
+      } catch (error) {
+          console.error("Error decrypting log details:", error.message);
+          return { ...log._doc, details: "Error decrypting details" };
+      }
+  });
+    res.status(200).json(decryptedLogs);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching latest activity: " + error });
+  }
+};
+
+
+
+export {getCountsByAction, getCrimesByLocation, getUpdateLogs, getLatestActivityFeed, updateReviewStatusToCleared, getAllLogs, exportCriminalData, addMultipleCriminals, updateCriminal, addCriminal, deleteCriminal, deleteCriminals, getCriminal, getAllCriminals, getAllReviewingCriminals };

@@ -7,7 +7,19 @@ import {
 import { Delete as DeleteIcon, Add as AddIcon, Search as SearchIcon } from '@mui/icons-material';
 import axios from "axios";
 import './UserTable.css';
+import Fuse from "fuse.js";
+import { useNavigate, useOutletContext } from 'react-router-dom';
 const UserTable = () => {
+  const navigate = useNavigate();
+
+  const [isLogin, setIsLogin] = useOutletContext();
+  useEffect(() => {
+    if (!isLogin) {
+      navigate("/");
+    }
+  },[]);
+
+
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUsers, setSelectedUsers] = useState([]);
@@ -30,7 +42,6 @@ const UserTable = () => {
       const response = await axios.get("http://localhost:3000/api/v1/user/allUsers", {
         withCredentials: true,
       });
-      console.log("response is: ", response.data.data);
 
       setUsers(response.data.data);
       
@@ -51,7 +62,7 @@ const UserTable = () => {
     const performSearch = () => {
       if (searchTerm) {
         const fuse = new Fuse(users, {
-          keys: ["name", "email", "post", "policeStationId", "contact"],
+          keys: ["name", "email", "post", "policeStationId", "contact","avatar"],
           includeScore: true,
           threshold: 0.5,
         });
@@ -163,6 +174,12 @@ const UserTable = () => {
     else {
       setEditData((prevData) => ({ ...prevData, [name]: value }));
      }
+     if (name === 'avatar') {
+      const file = event.target.files[0]; // Capture the actual File object
+      setEditData((prevState) => ({ ...prevState, [name]: file }));
+    } else {
+      setEditData((prevState) => ({ ...prevState, [name]: value }));
+    }
   };
 
   const handleBlur = (event) => {
@@ -178,8 +195,8 @@ const UserTable = () => {
       showNoValidPhone(!isValid);
     }
   };
+  const handleSaveChanges = async (e) => {
 
-  const handleSaveChanges = async () => {
     if(!editData) return;
     if(updatingDetails){
       return;
@@ -208,7 +225,18 @@ const UserTable = () => {
     try {
       let response;
       // Update HR or Company depending on the modal type
-      response = await axios.post('http://localhost:3000/api/v1/user/register-user', editData, {
+      // Create a FormData object
+      const formData = new FormData();
+      
+      // Append all fields to the FormData object, including the file (avatar)
+      for (const key in editData) {
+        formData.append(key, editData[key]);
+      }
+      
+      response = await axios.post('http://localhost:3000/api/v1/user/register-user', formData,{
+        headers: {
+          'Content-Type': 'multipart/form-data', // Set the content type to `multipart/form-data`
+        }, 
         withCredentials: true,
       });
       // Handle successful response
@@ -225,23 +253,7 @@ const UserTable = () => {
 
 
   return (
-    <Box sx={{ p: 3, backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-      {/* Title */}
-      <h1
-        style={{
-          fontSize: '2rem', // Increased font size
-          fontWeight: 'bold',
-          textAlign: 'center',
-          backgroundColor: '#1e90ff', // Background color
-          color: 'white', // Text color for better contrast
-          padding: '10px', // Padding for spacing inside the element
-          borderRadius: '4px', // Rounded corners for a polished look
-          marginBottom: '20px' // Margin bottom to separate from search bar
-        }}
-      >
-        User Management
-      </h1>
-
+    <Box sx={{ p: 8, backgroundColor: '#f8f9fa', minHeight: '100vh' }} >
       {/* Search Bar and Add User Button */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <TextField
@@ -269,13 +281,7 @@ const UserTable = () => {
         <Table aria-label="user table">
           <TableHead sx={{ backgroundColor: '#f1f1f1' }}>
             <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox
-                  indeterminate={selectedUsers.length > 0 && selectedUsers.length < filteredUsers.length}
-                  checked={filteredUsers.length > 0 && selectedUsers.length === filteredUsers.length}
-                  onChange={handleSelectAllClick}
-                />
-              </TableCell>
+             
               <TableCell sx={{ fontWeight: 'bold' }}>Photo</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}>Username</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}>Email</TableCell>
@@ -288,12 +294,7 @@ const UserTable = () => {
           <TableBody>
             {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((user, index) => (
               <TableRow key={index} hover>
-                <TableCell padding="checkbox">
-                  <Checkbox
-                    checked={isSelected(user._id)}
-                    onChange={(event) => handleCheckboxClick(event, user._id)}
-                  />
-                </TableCell>
+                
                 <TableCell>
                   <img src={user.avatar} alt="User" style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
                 </TableCell>
@@ -423,7 +424,6 @@ const UserTable = () => {
                 <label className="edit-label">Photo</label>
                 <input
                   name="avatar"
-                  value={editData.avatar || ""}
                   type='file'
                   onChange={handleEditChange}
                   fullWidth

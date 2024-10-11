@@ -2,17 +2,7 @@ import sys
 import json
 from rapidfuzz import fuzz
 import jellyfish
-from transformers import BertTokenizer, BertModel
-import torch
-from sklearn.metrics.pairwise import cosine_similarity
-from sentence_transformers import SentenceTransformer, util
 from googletrans import Translator
-
-# Initialize models only once
-bert_tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-bert_model = BertModel.from_pretrained('bert-base-uncased')
-sbert_model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
-test_model = SentenceTransformer('shahrukhx01/paraphrase-mpnet-base-v2-fuzzy-matcher')
 
 translator = Translator()
 
@@ -35,39 +25,9 @@ def traditional_similarity(name1, name2):
     total_score = (0.5 * levenshtein_score) + (0.3 * jaro_winkler_score) + (0.2 * phonetic_score)
     return total_score
 
-def get_embedding(text):
-    inputs = bert_tokenizer(text, return_tensors='pt', padding=True, truncation=True)
-    outputs = bert_model(**inputs)
-    embeddings = outputs.last_hidden_state.mean(dim=1).detach()
-    return embeddings
-
-def bert_similarity(name1, name2):
-    embedding1 = get_embedding(name1)
-    embedding2 = get_embedding(name2)
-    cosine_sim = cosine_similarity(embedding1, embedding2).item()
-    return cosine_sim * 100
-
-def calculate_test_model_similarity(name1, name2):
-    word1 = " ".join([char for char in name1])  # Char-level segmentation
-    word2 = " ".join([char for char in name2])
-    fuzzy_embeddings = test_model.encode([word1, word2])
-    test_model_similarity = util.cos_sim(fuzzy_embeddings[0], fuzzy_embeddings[1])
-    return test_model_similarity.item() * 100
-
-def calculate_sbert_similarity(name1, name2):
-    embeddings1 = sbert_model.encode(name1)
-    embeddings2 = sbert_model.encode(name2)
-    sbert_similarity = util.cos_sim(embeddings1, embeddings2).item()
-    return sbert_similarity * 100
-
 def combined_similarity(name1, name2):
     traditional_score = traditional_similarity(name1, name2)
-    bert_score = bert_similarity(name1, name2)
-    sbert_score = calculate_sbert_similarity(name1, name2)
-    test_model_score = calculate_test_model_similarity(name1, name2)
-    ml_score = bert_score * 0.1 + sbert_score * 0.1 + test_model_score * 0.8
-    final_score = (0.6 * traditional_score) + (0.4 * ml_score)
-    return final_score
+    return traditional_score
 
 def translate_to_english(name):
     """Translate the input name to English."""
@@ -97,6 +57,7 @@ if __name__ == "__main__":
         criminal["score"] = score
         # Prepare the output data
         result = {
+            "english_input_name": translated_input_name,
             "criminal_data": criminal  # Include all other data associated with the criminal
         }
         results.append(result)

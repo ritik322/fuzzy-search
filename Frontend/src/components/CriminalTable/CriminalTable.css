@@ -1,0 +1,90 @@
+
+.edit-dialog-title {
+    @apply flex items-center text-xl font-bold text-gray-700; /* Centered title with icon */
+  }
+  
+  .dark-mode .edit-dialog-title{
+    @apply text-[#ededed];
+  }
+  
+  /* Divider Line */
+  .edit-dialog-divider {
+    @apply border-y-2 border-black my-2; /* Light gray horizontal line */
+  }
+  
+  .dark-mode .edit-dialog-divider{
+    @apply border-slate-400;
+  }
+  
+  /* Dialog Content */
+  .edit-dialog-content {
+    @apply space-y-4; /* Spacing between input fields */
+  }
+  
+  /* Label and Input Group */
+  .edit-label-input-group {
+    @apply flex flex-wrap items-center space-y-1; /* Flex column for labels and inputs */
+  }
+  
+  /* Labels */
+  .edit-label {
+    @apply font-extrabold text-gray-800 px-0 py-2 w-[150px] mr-2; /* Darker gray label text */
+  }
+  
+  .dark-mode .edit-label {
+    @apply !text-slate-100;
+  }
+  
+  .dark-mode .inside-dialog{
+    @apply bg-zinc-800;
+  }
+  
+  /* Input Fields */
+  .edit-input {
+    @apply bg-slate-100 rounded-md !placeholder-gray-400 border border-gray-700 px-2 py-1 w-[calc(100%-160px)]; /* White background, rounded corners, gray placeholder, border */
+  }
+  
+  .dark-mode .edit-input {
+    @apply !bg-zinc-600 !text-[#ededed];
+  }
+  
+  /* .branch-options {
+    @apply flex space-x-2 mt-2; 
+  }
+  .branch-chip {
+    @apply bg-gray-200 text-gray-700 px-3 py-1 rounded-full cursor-pointer hover:bg-gray-300; 
+  } */
+  
+  /* Dialog Actions */
+  .edit-dialog-actions {
+    @apply !flex !justify-start !space-x-4 !mx-3 ; /* Left-aligned buttons with spacing */
+  }
+  
+  /* Buttons */
+  .edit-ok-button, .edit-cancel-button {
+    @apply !rounded-2xl !py-2 !px-6 !text-black !font-bold; /* Rounded buttons with padding */
+  }
+  
+  /* OK Button */
+  .edit-ok-button {
+    @apply bg-gradient-to-b from-[#dedede] to-[#a1a1a1]; /* Gradient background for OK button */
+  }
+  
+  /* Cancel Button */
+  .edit-cancel-button {
+    @apply bg-gradient-to-b from-[#dedede] to-[#a1a1a1]; /* Light gray background for Cancel button */
+  }
+  
+  /* .dark-mode .MuiSvgIcon-root {
+    color: #ddd;
+  } */
+  
+  .invalid-details-text{
+    @apply font-bold text-red-600;
+  }
+  
+  .dark-mode .invalid-details-text{
+    @apply text-slate-400;
+  }
+  
+  

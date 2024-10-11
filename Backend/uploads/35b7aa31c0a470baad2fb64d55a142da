@@ -1,0 +1,3 @@
+name,inCustody,age,description,gender,location,crime
+Jonnn Doe,true ,30,Theft at a mall,Male,New York,Theft
+Jeene Smit,false ,25,Fraud investigation,Female,Los Angeles,Fraud

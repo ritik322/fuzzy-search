@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import CriminalInfoContainer from "../components/criminalInfoContainer";
+import CriminalInfoContainer from "../components/CriminalInfoContainer";
 import { useNavigate, useOutletContext } from "react-router-dom";
-import CriminalTable from "../components/CriminalTable/CriminalTable.jsx";
 import axios from "axios";
 import { Backdrop, CircularProgress } from "@mui/material";
 

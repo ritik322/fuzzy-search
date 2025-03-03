@@ -1,0 +1,11 @@
+name,photo,inCustody,age,description,gender,location,crime,reviewStatus,matchPercentage,matchedRecord
+John Doe,https://example.com/photo1.jpg,true,35,Accused of homicide in downtown area,Male,New York,"Homicide",under review,85,60b0c0c0d2d2b13f4c3d3e4b
+Jane Smith,https://example.com/photo2.jpg,false,28,Involved in assault at local club,Female,Los Angeles,"Assault",cleared,90,60b0c0c0d2d2b13f4c3d3e4c
+Carlos Johnson,https://example.com/photo3.jpg,true,42,Charged with burglary of a residence,Male,Chicago,"Burglary",under review,75,60b0c0c0d2d2b13f4c3d3e4d
+Emily Davis,https://example.com/photo4.jpg,false,30,Committed fraud by manipulating financial records,Female,Houston,"Fraud",cleared,92,60b0c0c0d2d2b13f4c3d3e4e
+Michael Lee,https://example.com/photo5.jpg,true,25,Accused of drug offenses near university campus,Male,Miami,"Drug Offenses",under review,80,60b0c0c0d2d2b13f4c3d3e4f
+Alice Brown,https://example.com/photo6.jpg,false,33,Charged with assault in a domestic violence case,Female,San Francisco,"Assault",cleared,78,60b0c0c0d2d2b13f4c3d3e50
+David Wilson,https://example.com/photo7.jpg,true,40,Convicted for involvement in a drug ring,Male,Dallas,"Drug Offenses",under review,87,60b0c0c0d2d2b13f4c3d3e51
+Sarah Miller,https://example.com/photo8.jpg,true,22,Accused of fraud through online scams,Female,Boston,"Fraud",under review,89,60b0c0c0d2d2b13f4c3d3e52
+James Taylor,https://example.com/photo9.jpg,false,29,Accused of homicide in a gang-related incident,Male,Las Vegas,"Homicide",cleared,92,60b0c0c0d2d2b13f4c3d3e53
+Laura Garcia,https://example.com/photo10.jpg,true,27,Charged with burglary in a commercial theft,Female,Miami,"Burglary",under review,74,60b0c0c0d2d2b13f4c3d3e54

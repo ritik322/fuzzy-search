@@ -25,7 +25,7 @@ const Login = () => {
       // Pass the username to the login function in App
       const res = await axios
         .post(
-          "http://localhost:3000/api/v1/user/login-user",
+          "https://fuzzy-search-backend.vercel.app/api/v1/user/login-user",
           {
             username,
             password,

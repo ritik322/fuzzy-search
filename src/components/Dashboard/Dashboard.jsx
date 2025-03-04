@@ -15,14 +15,14 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const actionResponse = await axios.get('http://localhost:3000/api/v1/criminal/counts-by-action');
+        const actionResponse = await axios.get('https://fuzzy-search-backend.vercel.app/api/v1/criminal/counts-by-action');
         const actions = actionResponse.data.map(item => ({ type: item._id, count: item.count }));
         setActionCounts(actions);
 
-        const updatesResponse = await axios.get('http://localhost:3000/api/v1/criminal/updates');
+        const updatesResponse = await axios.get('https://fuzzy-search-backend.vercel.app/api/v1/criminal/updates');
         setUpdateLogs(updatesResponse.data);
 
-        const activityResponse = await axios.get('http://localhost:3000/api/v1/criminal/latest-activity');
+        const activityResponse = await axios.get('https://fuzzy-search-backend.vercel.app/api/v1/criminal/latest-activity');
         setActivityFeed(activityResponse.data);
 
         setLoading(false); // Loading done

@@ -58,7 +58,7 @@ const ImportPage = () => {
       const formData = new FormData();
       formData.append("file", file);
 
-      fetch("http://localhost:3000/api/v1/criminal/add-multiple-criminals", {
+      fetch("https://fuzzy-search-backend.vercel.app/api/v1/criminal/add-multiple-criminals", {
         method: "POST",
         body: formData,
         headers: {

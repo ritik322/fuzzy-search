@@ -5,7 +5,7 @@ const FeedbackForm = () => {
     const [rating, setRating] = useState(5);
   
     const submitFeedback = async () => {
-      const response = await fetch('http://localhost:3000/feedback', {
+      const response = await fetch('https://fuzzy-search-backend.vercel.app/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: user._id, comments, rating }),

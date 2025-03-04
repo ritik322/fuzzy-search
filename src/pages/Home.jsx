@@ -71,7 +71,7 @@ const Home = () => {
     setLoading(true);
     const res = await axios
       .post(
-        "http://localhost:3000/api/v1/search",
+        "https://fuzzy-search-backend.vercel.app/api/v1/search",
         { name: input },
         { withCredentials: true }
       )

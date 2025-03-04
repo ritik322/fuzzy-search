@@ -11,7 +11,7 @@ const LogsPage = () => {
     // Fetch the logs when the component mounts
     const fetchLogs = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/v1/criminal/get-all-logs');
+        const response = await axios.get('https://fuzzy-search-backend.vercel.app/api/v1/criminal/get-all-logs');
         setLogs(response.data);
         setLoading(false);
       } catch (err) {

@@ -39,7 +39,7 @@ const UserTable = () => {
   const getData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("http://localhost:3000/api/v1/user/allUsers", {
+      const response = await axios.get("https://fuzzy-search-backend.vercel.app/api/v1/user/allUsers", {
         withCredentials: true,
       });
 
@@ -142,7 +142,7 @@ const UserTable = () => {
     setDeleting(true);
     setLoading(true);
     try {
-      await axios.get(`http://localhost:3000/api/v1/user/delete-user/${userToDelete._id}`, {
+      await axios.get(`https://fuzzy-search-backend.vercel.app/api/v1/user/delete-user/${userToDelete._id}`, {
         withCredentials: true,
       });
       selectedUsers.filter(id=>id!=userToDelete._id)
@@ -233,7 +233,7 @@ const UserTable = () => {
         formData.append(key, editData[key]);
       }
       
-      response = await axios.post('http://localhost:3000/api/v1/user/register-user', formData,{
+      response = await axios.post('https://fuzzy-search-backend.vercel.app/api/v1/user/register-user', formData,{
         headers: {
           'Content-Type': 'multipart/form-data', // Set the content type to `multipart/form-data`
         }, 

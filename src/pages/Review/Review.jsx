@@ -12,7 +12,7 @@ const ReviewPage = () => {
   const getData = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:3000/api/v1/criminal/get-review-criminals', {
+      const response = await axios.get('https://fuzzy-search-backend.vercel.app/api/v1/criminal/get-review-criminals', {
         withCredentials: true,
       });
       const criminalsData = response.data;
@@ -33,7 +33,7 @@ const ReviewPage = () => {
 
   const getCriminal = useCallback(async (id, criminalId) => {
     try {
-      const response = await axios.get(`http://localhost:3000/api/v1/criminal/get-criminal/${id}`, {
+      const response = await axios.get(`https://fuzzy-search-backend.vercel.app/api/v1/criminal/get-criminal/${id}`, {
         withCredentials: true,
       });
       setMatchedRecords((prevState) => ({
@@ -49,7 +49,7 @@ const ReviewPage = () => {
     setLoading(true);
     try {
       await axios.post(
-        `http://localhost:3000/api/v1/criminal/delete-criminal/${id}`,
+        `https://fuzzy-search-backend.vercel.app/api/v1/criminal/delete-criminal/${id}`,
         { withCredentials: true }
       );
       getData(); 
@@ -64,7 +64,7 @@ const ReviewPage = () => {
     setLoading(true);
     try {
       await axios.put(
-        `http://localhost:3000/api/v1/criminal/update-status/${id}`,
+        `https://fuzzy-search-backend.vercel.app/api/v1/criminal/update-status/${id}`,
         { withCredentials: true }
       );
       getData();

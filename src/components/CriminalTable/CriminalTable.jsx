@@ -71,7 +71,7 @@ const UserTable = ({ tableData }) => {
     try {
       setLoading(true);
       const response = await axios
-        .get("http://localhost:3000/api/v1/criminal/get-all-criminals", {
+        .get("https://fuzzy-search-backend.vercel.app/api/v1/criminal/get-all-criminals", {
           withCredentials: true,
         })
         .then((res) => res.data);
@@ -130,7 +130,7 @@ const UserTable = ({ tableData }) => {
     setLoading(true);
     try {
       await axios.post(
-        `http://localhost:3000/api/v1/criminal/delete-criminal/${userToDelete._id}`,
+        `https://fuzzy-search-backend.vercel.app/api/v1/criminal/delete-criminal/${userToDelete._id}`,
         {
           withCredentials: true,
         }
@@ -238,7 +238,7 @@ const UserTable = ({ tableData }) => {
       if (!updatingCriminal) {
         response = await axios
           .post(
-            "http://localhost:3000/api/v1/criminal/add-criminal",
+            "https://fuzzy-search-backend.vercel.app/api/v1/criminal/add-criminal",
             formData,
             {
               headers: {
@@ -257,7 +257,7 @@ const UserTable = ({ tableData }) => {
       } else {
         response = await axios
           .post(
-            `http://localhost:3000/api/v1/criminal/update-criminal/${editData._id}`,
+            `https://fuzzy-search-backend.vercel.app/api/v1/criminal/update-criminal/${editData._id}`,
             editData,
             {
               withCredentials: true,

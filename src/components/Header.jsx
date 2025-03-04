@@ -19,7 +19,7 @@ const Header = ({ isLogin, setIsLogin }) => {
   const navigate = useNavigate();
   const handleLogout = async (e) => {
     const data = await axios
-      .get("http://localhost:3000/api/v1/user/logout", {
+      .get("https://fuzzy-search-backend.vercel.app/api/v1/user/logout", {
         withCredentials: true,
       })
       .then((res) => res.data).catch( e => e.response.data)

@@ -76,7 +76,10 @@ const Home = () => {
         { withCredentials: true }
       )
       .then((res) => res.data)
-      .catch((e) => e);
+      .catch((e) => {
+        console.log(e);
+        setLoading(false);
+  });
   
     const transformedData = res.map((item) => item.criminal_data);
     setTableData(transformedData);

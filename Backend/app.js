@@ -10,7 +10,10 @@ const app = express();
 
 // Configure CORS
 app.use(cors({
-  origin: 'http://localhost:5173', // Replace with your frontend domain or use '*' for allowing all
+  origin: [
+    'http://localhost:5173',
+    'https://fuzzy-search-eight.vercel.app'
+  ], // Replace with your frontend domain or use '*' for allowing all
   methods: ['GET', 'POST', 'PUT', 'DELETE'], // Define allowed HTTP methods
   credentials: true, // Allow credentials (cookies, authorization headers, etc.)
 }));
